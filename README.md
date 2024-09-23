@@ -95,6 +95,39 @@ Once the backend is functional, shift focus to Flutter. Keep it simple at first:
 **Flutter** is my default choice in frontend. It's cross-platform most of all. I need more experience in it.
 
 **SQLite** is also my default choice for database. Lightweight, it integrates well in mobile. ExpenseFlow doesn't have a huge amount of complex data to handle.
+
+### Codebase architecture
+```tree
+ExpenseFlow/
+│
+├── cmd/
+│   └── expenseflow/
+│       └── main.go         # Entry point of the application
+│
+├── internal/
+│   ├── db/
+│   │   ├── models.go       # Database models (e.g., Expense, Session)
+│   │   ├── queries.go      # Database query functions
+│   │   └── init.go         # Database connection setup
+│   ├── handlers/
+│   │   ├── expenses.go     # API route handlers (e.g., for adding expenses)
+│   │   └── sessions.go     # API route handlers (e.g., for sessions)
+│   └── services/
+│       └── report.go       # Business logic (e.g., generating reports)
+│
+├── pkg/
+│   └── middleware/         # Any reusable middleware (e.g., authentication, logging)
+│
+├── api/
+│   └── routes.go           # Define your routes (e.g., registering API endpoints)
+│
+├── config/
+│   └── config.go           # Configuration (e.g., environment variables, app settings)
+│
+├── .gitignore
+├── go.mod
+└── README.md
+```
 ## Problems and solutions
 🚧
 ## Design choices
