@@ -13,10 +13,10 @@ type Client struct {
 }
 
 type Session struct {
-    ID      int
-    Client  Client
-    StartAt time.Time
-    EndAt   time.Time
+    ID       int
+    ClientID int
+    StartAt  time.Time
+    EndAt    time.Time
 }
 
 type Category struct {
@@ -27,16 +27,16 @@ type Category struct {
 
 type Reason struct {
     ID          int
+    CategoryID  int
     Name        string
     Description string
-    Category    Category
 }
 
 type Expense struct {
     ID          int
-    Session     Session
+    SessionID   int
+    ReasonID    int
     Description string
     Amount      float64
-    Reason      Reason
     DateTime    time.Time
 }
