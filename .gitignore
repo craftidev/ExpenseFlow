@@ -29,3 +29,6 @@ go.work.sum
 
 # database
 *.db
+
+# file upload: receipts pictures
+/assets/receipts
