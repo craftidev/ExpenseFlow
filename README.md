@@ -132,3 +132,12 @@ ExpenseFlow/
 🚧
 ## Design choices
 🚧
+## Pending question
+- Do I need a currency converter?
+- Does the report show multiple totals depending on currency?
+- What are the models/properties I'm missing?
+- Is there a use to know outgoing or incoming travels?
+- Use for town goal?
+- Expense.Location just town names?
+- Does Client need contact info?
+- Does Expense need Description or OtherInfo?
