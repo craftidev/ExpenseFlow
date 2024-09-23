@@ -2,12 +2,12 @@
 **Track and report professional expenses**
 *ExpenseFlow is an app designed to help professionals track and report their expenses. It simplifies the process of managing receipts, categorizing expenses, and generating reports, all from a single platform.*
 
-### Features
-- **Session-based expense tracking:** Log expenses against a session (client or mission).
-- **Expense details:** Track the reason, value, date, and time of each expense.
-- **Receipt capture:** Upload photos of receipts.
-- **Custom reports:** Generate reports in a specific format.
-- **Cross-platform support:** Available on Android, iOS, Windows, Mac, Linux and Online.
+### Expected Features
+- 🚧 **Session-based expense tracking:** Log expenses against a session (client or mission).
+- 🚧 **Expense details:** Track the reason, value, date, and time of each expense.
+- 🚧 **Receipt capture:** Upload photos of receipts.
+- 🚧 **Reports:** Generate reports in a specific format.
+- 🚧 **Cross-platform support:** Available on Android, iOS, Windows, Mac, Linux and Online.
 
 ### Tech Stack
 - **Backend:** Go (Golang)
@@ -24,8 +24,6 @@
      - [ ] GET `/expenses`: Get a list of all expenses
      - [ ] POST `/receipts`: Upload a receipt
      - [ ] GET `/reports`: Generate a report
-   - [ ] Integrate a database (SQLite)
-   - [ ] Handle authentication (OAuth2 or JWT)
    - [ ] Set up error handling, logging, and unit testing
    - [ ] Write documentation for the backend API (OpenAPI/Swagger)
 
@@ -119,7 +117,7 @@ ExpenseFlow/
 │   └── middleware/         # Any reusable middleware (e.g., authentication, logging)
 │
 ├── api/
-│   └── routes.go           # Define your routes (e.g., registering API endpoints)
+│   └── routes.go           # Routes definition (e.g., registering API endpoints)
 │
 ├── config/
 │   └── config.go           # Configuration (e.g., environment variables, app settings)
