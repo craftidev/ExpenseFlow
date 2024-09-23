@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+
 // List of models: Client, Session, Amount, Expense
 // (Not its own DB table: Amount)
 
@@ -33,6 +34,7 @@ func (s Session) String() string {
     return fmt.Sprintf(s.Name)
 }
 
+
 // Amount
 type Amount struct {
     Value    float64
@@ -43,6 +45,8 @@ func (a Amount) String() string {
     return fmt.Sprintf("%.2f %s", a.Value, a.Currency)
 }
 
+
+// Expense
 type Expense struct {
     ID         int
     SessionID  int
