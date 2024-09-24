@@ -126,6 +126,10 @@ ExpenseFlow/
 ├── go.mod
 └── README.md
 ```
+
+### Date/Time
+Everything will use the standard library "time" and will record UTC timestamps. Making the user able travel in different timezone and not confuse any logic. Flutter will be the one taking care of the preferred display for the user.
+
 ## Problems and solutions
 🚧
 ## Design choices
