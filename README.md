@@ -16,7 +16,6 @@
 - **License:** Apache 2.0
 
 ### Roadmap
-
 1. **Backend Development (Go)**
    - [ ] Define data models (expenses, sessions, reasons, etc.)
    - [ ] Set up API routes for expense tracking:
@@ -77,7 +76,6 @@
 - **Testing**: Write tests for the API routes as I go. Go has built-in testing functionality (`go test`).
 
 ### 2. **Frontend Focus (Flutter)**
-
 Once the backend is functional, shift focus to Flutter. Keep it simple at first:
 - A form to add expenses
 - A file picker for receipt images
@@ -135,6 +133,11 @@ ExpenseFlow/
 
 ### Date/Time
 Everything will use the standard library "time" and will record UTC timestamps. Making the user able travel in different timezone and not confuse any logic. Flutter will be the one taking care of the preferred display for the user.
+
+### Receipt handling
+I chose to have non nullable in the DB. A placeholder img. So when I test Expense for validation it's not the same as when I CheckReceipt.
+The latter will make sure the file exist and is not the placeholder.
+I think the user could add the picture later in their workflow when adding expense.
 
 ## Problems and solutions
 🚧
