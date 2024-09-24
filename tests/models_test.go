@@ -33,47 +33,48 @@ func TestExpenseValid(t *testing.T) {
         t.Errorf("expected valid expense, got error: %v", err)
     }
 
-    invalidExpenses := make([]db.Expense, 5)
+    var invalidExpenses [5]db.Expense
 
-    invalidExpenses = append(invalidExpenses, db.Expense{
-        ID:        0,  // Invalid ID
+    invalidExpenses[0] = db.Expense{
+        ID:        0,               // 0: Invalid ID
         SessionID: 1,
         Amount:    db.Amount{Value: 100, Currency: "USD"},
         DateTime:  time.Now(),
         ReceiptURL: config.Path + "/assets/receipt_test.png",
-    })
-    invalidExpenses = append(invalidExpenses, db.Expense{
+    }
+    invalidExpenses[1] = db.Expense{
         ID:        1,
-        SessionID: 0,  // Invalid SessionID
+        SessionID: 0,               // 1: Invalid SessionID
         Amount:    db.Amount{Value: 100, Currency: "USD"},
         DateTime:  time.Now(),
         ReceiptURL: config.Path + "/assets/receipt_test.png",
-    })
-    invalidExpenses = append(invalidExpenses, db.Expense{
+    }
+    invalidExpenses[2] = db.Expense{
         ID:        1,
-        SessionID: 0,
-        Amount:    db.Amount{},  // Invalid Amount
+        SessionID: 1,
+        Amount:    db.Amount{},     // 2: Invalid Amount
         DateTime:  time.Now(),
         ReceiptURL: config.Path + "/assets/receipt_test.png",
-    })
-    invalidExpenses = append(invalidExpenses, db.Expense{
+    }
+    invalidExpenses[3] = db.Expense{
         ID:        1,
-        SessionID: 0,
+        SessionID: 1,
+        Amount:    db.Amount{Value: 100, Currency: "USD"},
+        DateTime:  time.Time{},     // 3: Invalid DateTime
+        ReceiptURL: config.Path + "/assets/receipt_test.png",
+    }
+    invalidExpenses[4] = db.Expense{
+        ID:        1,
+        SessionID: 1,
         Amount:    db.Amount{Value: 100, Currency: "USD"},
         DateTime:  time.Now(),
-        ReceiptURL: config.Path + "",  // Invalid ReceiptURL
-    })
-    invalidDateTimeExpense := db.Expense{}
-    invalidDateTimeExpense.ID = 1
-    invalidDateTimeExpense.SessionID = 1
-    invalidDateTimeExpense.Amount = db.Amount{Value: 100, Currency: "USD"}
-    invalidDateTimeExpense.ReceiptURL = config.Path + "/assets/receipt_test.png"
-    invalidExpenses = append(invalidExpenses, invalidDateTimeExpense)
+        ReceiptURL: "",             // 4: Invalid ReceiptURL
+    }
 
-    for _, invalidExpense := range invalidExpenses {
+    for i, invalidExpense := range invalidExpenses {
         err = invalidExpense.Valid()
         if err == nil {
-            t.Error("expected error, got valid expense")
+            t.Errorf("expected error, got valid expense on invalidExpense test number: %d", i)
         }
     }
 }
