@@ -79,7 +79,6 @@ func (a Amount) Valid() error {
 func (a *Amount) Add(other Amount) error {
     if err := a.Valid();     err != nil { return err }
     if err := other.Valid(); err != nil { return err }
-
     if a.Currency != other.Currency {
         return fmt.Errorf("currencies don't match: %v and %v", a, other)
     }
@@ -101,7 +100,6 @@ func (Amount) Sum(amounts []Amount) ([]Amount, error) {
     for currency, sum := range sumsByCurrency {
         resultFormat = append(resultFormat, Amount{sum, currency})
     }
-
     return resultFormat, nil
 }
 
