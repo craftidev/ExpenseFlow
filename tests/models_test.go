@@ -25,7 +25,7 @@ func TestExpenseValid(t *testing.T) {
         SessionID: 1,
         Amount:    db.Amount{Value: 100, Currency: "USD"},
         DateTime:  time.Now(),
-        ReceiptURL: config.Path + "/assets/receipt_test.png",
+        ReceiptURL: "/assets/receipt_test.png",
     }
 
     err := validExpense.Valid()
@@ -40,28 +40,28 @@ func TestExpenseValid(t *testing.T) {
         SessionID: 1,
         Amount:    db.Amount{Value: 100, Currency: "USD"},
         DateTime:  time.Now(),
-        ReceiptURL: config.Path + "/assets/receipt_test.png",
+        ReceiptURL: "/assets/receipt_test.png",
     }
     invalidExpenses[1] = db.Expense{
         ID:        1,
         SessionID: 0,               // 1: Invalid SessionID
         Amount:    db.Amount{Value: 100, Currency: "USD"},
         DateTime:  time.Now(),
-        ReceiptURL: config.Path + "/assets/receipt_test.png",
+        ReceiptURL: "/assets/receipt_test.png",
     }
     invalidExpenses[2] = db.Expense{
         ID:        1,
         SessionID: 1,
         Amount:    db.Amount{},     // 2: Invalid Amount
         DateTime:  time.Now(),
-        ReceiptURL: config.Path + "/assets/receipt_test.png",
+        ReceiptURL: "/assets/receipt_test.png",
     }
     invalidExpenses[3] = db.Expense{
         ID:        1,
         SessionID: 1,
         Amount:    db.Amount{Value: 100, Currency: "USD"},
         DateTime:  time.Time{},     // 3: Invalid DateTime
-        ReceiptURL: config.Path + "/assets/receipt_test.png",
+        ReceiptURL: "/assets/receipt_test.png",
     }
     invalidExpenses[4] = db.Expense{
         ID:        1,
@@ -85,13 +85,13 @@ func TestCheckReceipt(t *testing.T) {
         ReceiptURL: config.DefaultReceiptURL,
     }
     err := expenseWithDefaultURL.CheckReceipt()
-    if err != nil {
+    if err == nil {
         t.Error("expected CheckReceipt to return an error for default URL")
     }
 
     // Test case with non-existent file
     expenseWithNonExistentFile := db.Expense{
-        ReceiptURL: config.Path + "/assets/receipts/nonexistent.png",
+        ReceiptURL: "/assets/receipts/nonexistent.png",
     }
     err = expenseWithNonExistentFile.CheckReceipt()
     if err == nil {
@@ -100,7 +100,7 @@ func TestCheckReceipt(t *testing.T) {
 
     // Test case with existing file
     expenseWithRealReceipt := db.Expense{
-        ReceiptURL: config.Path + "/assets/receipts/receipt_test.png",
+        ReceiptURL: "/assets/receipts/receipt_test.png",
     }
     err = expenseWithRealReceipt.CheckReceipt()
     if err != nil {
