@@ -10,8 +10,6 @@ import (
 
 // List of models: Client, Session, Amount, ExpenseType, Expense
 // (Not its own DB table: Amount)
-//
-// TODO Validation/Error handling thoroughly
 
 // Client
 // Methods: String, Valid
@@ -139,8 +137,6 @@ func (e Expense) String() string {
     return fmt.Sprintf("%v (%d)", e.Amount, e.TypeID)
 }
 
-// TODO in services, even if we have a default URL (pointing at a default img representing empty receipt),
-// we need to check before creating a report that ALL Receipts are real ones not default
 func (e Expense) Valid() error {
     var amountZeroValue Amount
     if e.ID == 0 || e.SessionID == 0 || e.DateTime.IsZero() || e.Amount == amountZeroValue || e.ReceiptURL == "" {
