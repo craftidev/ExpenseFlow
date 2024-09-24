@@ -3,6 +3,8 @@ package db
 import (
 	"fmt"
 	"time"
+    "os"
+    "errors"
 	"github.com/craftidev/expenseflow/config"
 )
 
@@ -22,11 +24,11 @@ func (c Client) String() string {
     return fmt.Sprintf(c.Name)
 }
 
-func(c Client) Valid() (Client, error) {
+func(c Client) Valid() error {
     if c.ID == 0 || c.Name == "" {
-        return Client{}, fmt.Errorf("client ID and name must be non-zero and non-empty")
+        return fmt.Errorf("client ID and name must be non-zero and non-empty")
     }
-    return c, nil
+    return nil
 }
 
 // Session
@@ -44,14 +46,14 @@ func (s Session) String() string {
     return fmt.Sprintf(s.Name)
 }
 
-func (s Session) Valid() (Session, error) {
+func (s Session) Valid() error {
     if s.ID == 0 || s.ClientID == 0 || s.Name == "" || s.Address == "" || s.StartAt.IsZero() || s.EndAt.IsZero() {
-        return Session{}, fmt.Errorf("session ID, client ID, name, address, start and end times must be non-zero and non-empty")
+        return fmt.Errorf("session ID, client ID, name, address, start and end times must be non-zero and non-empty")
     }
     if s.StartAt.After(s.EndAt) {
-        return Session{}, fmt.Errorf("start time must be before end time (session ID: %d)", s.ID)
+        return fmt.Errorf("start time must be before end time (session ID: %d)", s.ID)
     }
-    return s, nil
+    return nil
 }
 
 
@@ -66,14 +68,14 @@ func (a Amount) String() string {
     return fmt.Sprintf("%.2f %s", a.Value, a.Currency)
 }
 
-func (a Amount) Valid() (Amount, error) {
+func (a Amount) Valid() error {
     if a.Currency == "" || a.Value == 0 {
-        return Amount{}, fmt.Errorf("amount value and currency must be non-empty and non-zero")
+        return fmt.Errorf("amount value and currency must be non-empty and non-zero")
     }
     if a.Value < 0 {
-        return Amount{}, fmt.Errorf("amount value must be positive")
+        return fmt.Errorf("amount value must be positive")
     }
-    return a, nil
+    return nil
 }
 
 func (a *Amount) Add(other Amount) error {
@@ -87,7 +89,7 @@ func (a *Amount) Add(other Amount) error {
 func (Amount) Sum(amounts []Amount) ([]Amount, error) {
     sumsByCurrency := make(map[string]float64)
     for _, amount := range amounts {
-        if _, err := amount.Valid(); err != nil {
+        if err := amount.Valid(); err != nil {
             return nil, err
         }
         sumsByCurrency[amount.Currency] += amount.Value
@@ -113,11 +115,11 @@ func (et ExpenseType) String() string {
     return fmt.Sprintf(et.Name)
 }
 
-func (et ExpenseType) Valid() (ExpenseType, error) {
+func (et ExpenseType) Valid() error {
     if et.ID == 0 || et.Name == "" {
-        return ExpenseType{}, fmt.Errorf("expense type ID and name must be non-zero and non-empty")
+        return fmt.Errorf("expense type ID and name must be non-zero and non-empty")
     }
-    return et, nil
+    return nil
 }
 
 
@@ -139,17 +141,35 @@ func (e Expense) String() string {
 
 // TODO in services, even if we have a default URL (pointing at a default img representing empty receipt),
 // we need to check before creating a report that ALL Receipts are real ones not default
-func (e Expense) Valid() (Expense, error) {
+func (e Expense) Valid() error {
     var amountZeroValue Amount
     if e.ID == 0 || e.SessionID == 0 || e.DateTime.IsZero() || e.Amount == amountZeroValue || e.ReceiptURL == "" {
-        return Expense{}, fmt.Errorf("expense ID, session ID, amount, date and time, and receipt URL must be non-zero and non-empty")
+        return fmt.Errorf("expense ID, session ID, amount, date and time, and receipt URL must be non-zero and non-empty")
     }
-    if _, err := e.Amount.Valid(); err != nil {
-        return Expense{}, fmt.Errorf("invalid amount: %v", err)
+    if err := e.Amount.Valid(); err != nil {
+        return fmt.Errorf("invalid amount: %v", err)
     }
-    return e, nil
+    return nil
 }
 
-func (e Expense) HasReceipt() bool {
-    return e.ReceiptURL!= config.DefaultReceiptURL
+// TODO probably will have to test with Flutter if the img is corrupted and can't show
+func (e Expense) HasReceipt() error {
+    if e.ReceiptURL == config.DefaultReceiptURL {
+        return fmt.Errorf("receipt is the default placeholder image")
+    }
+
+    if e.ReceiptURL == "" {
+        return fmt.Errorf("receipt URL is empty")
+    }
+
+    _, err := os.Stat(e.ReceiptURL)
+    if errors.Is(err, os.ErrNotExist) {
+        return fmt.Errorf("invalid receipt URL: %v", e.ReceiptURL)
+    }
+
+    if err != nil {
+        return err
+    }
+
+    return nil
 }
