@@ -8,6 +8,17 @@ import (
 )
 
 
+// TODO Validates that the expense's amount is positive
+// TODO Checks if the expense's receipt URL is valid when it's an empty string
+// TODO Ensures that the expense's receipt URL is valid when it's a relative path
+// TODO Verifies that the expense's receipt URL is valid when it's a valid URL
+// TODO Tests the expense's Valid function with an amount having zero value
+// TODO Checks the expense's Valid function with a session ID set to a negative value
+// TODO Validates the expense's CheckReceipt function with a non-image file
+// TODO Tests the expense's CheckReceipt function with a file that doesn't exist
+// TODO Verifies the expense's CheckReceipt function with a valid image file
+// TODO Checks the expense's CheckReceipt function with a URL that doesn't exist
+
 func TestExpenseValid(t *testing.T) {
     validExpense := db.Expense{
         ID:        1,
