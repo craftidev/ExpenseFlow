@@ -160,9 +160,9 @@ func (e Expense) CheckReceipt() error {
         return fmt.Errorf("receipt URL is empty")
     }
 
-    _, err := os.Stat(e.ReceiptURL)
+    _, err := os.Stat(config.Path  + e.ReceiptURL)
     if errors.Is(err, os.ErrNotExist) {
-        return fmt.Errorf("invalid receipt URL: %v", e.ReceiptURL)
+        return fmt.Errorf("invalid receipt URL (with path config): %s%s", config.Path, e.ReceiptURL)
     }
 
     if err != nil {
