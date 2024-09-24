@@ -124,7 +124,7 @@ func (et ExpenseType) Valid() error {
 
 
 // Expense
-// Methods: String, Valid, HasReceipt
+// Methods: String, Valid, CheckReceipt
 type Expense struct {
     ID         int
     SessionID  int
@@ -153,7 +153,7 @@ func (e Expense) Valid() error {
 }
 
 // TODO probably will have to test with Flutter if the img is corrupted and can't show
-func (e Expense) HasReceipt() error {
+func (e Expense) CheckReceipt() error {
     if e.ReceiptURL == config.DefaultReceiptURL {
         return fmt.Errorf("receipt is the default placeholder image")
     }

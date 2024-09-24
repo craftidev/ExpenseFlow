@@ -67,30 +67,30 @@ func TestExpenseValid(t *testing.T) {
     }
 }
 
-func TestHasReceipt(t *testing.T) {
+func TestCheckReceipt(t *testing.T) {
     // Test case with default URL
     expenseWithDefaultURL := db.Expense{
         ReceiptURL: config.DefaultReceiptURL,
     }
-    err := expenseWithDefaultURL.HasReceipt()
+    err := expenseWithDefaultURL.CheckReceipt()
     if err != nil {
-        t.Error("expected HasReceipt to return an error for default URL")
+        t.Error("expected CheckReceipt to return an error for default URL")
     }
 
     // Test case with non-existent file
     expenseWithNonExistentFile := db.Expense{
         ReceiptURL: config.Path + "/assets/receipts/nonexistent.png",
     }
-    err = expenseWithNonExistentFile.HasReceipt()
+    err = expenseWithNonExistentFile.CheckReceipt()
     if err == nil {
-        t.Error("expected HasReceipt to return an error for non-existent file")
+        t.Error("expected CheckReceipt to return an error for non-existent file")
     }
 
     // Test case with existing file
     expenseWithRealReceipt := db.Expense{
         ReceiptURL: config.Path + "/assets/receipts/receipt_test.png",
     }
-    err = expenseWithRealReceipt.HasReceipt()
+    err = expenseWithRealReceipt.CheckReceipt()
     if err != nil {
         t.Errorf("unexpected error: %v", err)
     }
