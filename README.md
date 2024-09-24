@@ -84,8 +84,14 @@ Once the backend is functional, shift focus to Flutter. Keep it simple at first:
 - A report generator that formats data nicely
 
 ## Reminders and hints
+Testing:
+```bash
+go test ./tests
+```
+
 ### Install
-🚧
+modify path in `/config/config.go`
+
 ## Important decisions
 ### Choice of stack: Go / Flutter / SQLite:
 **Go** is fast, simple and clear. After some courses on [boot.dev](https://boot.dev) I got attracted to it and wanted to make a full project to really compare to my other experiences in Python, my language of choice for many years, but also PHP, Java, TypeScript...
