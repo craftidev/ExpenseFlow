@@ -32,3 +32,6 @@ go.work.sum
 
 # file upload: receipts pictures
 /assets/receipts
+
+# logs
+app.log
