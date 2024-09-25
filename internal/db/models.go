@@ -77,10 +77,13 @@ func (a Amount) Valid() error {
 }
 
 func (a *Amount) Add(other Amount) error {
-    if err := a.Valid();     err != nil { return err }
-    if err := other.Valid(); err != nil { return err }
-    if a.Currency != other.Currency {
-        return fmt.Errorf("currencies don't match: %v and %v", a, other)
+    switch {
+    case a.Valid() != nil:
+        return fmt.Errorf("invalid first amount: %v", a.Valid())
+    case other.Valid() != nil:
+        return fmt.Errorf("invalid second amount: %v", other.Valid())
+    case a.Currency != other.Currency:
+        return fmt.Errorf("currencies don't match: %v and %v", a.Currency, other.Currency)
     }
 
     a.Value += other.Value
@@ -152,22 +155,17 @@ func (e Expense) Valid() error {
 
 // TODO probably will have to test with Flutter if the img is corrupted and can't show
 func (e Expense) CheckReceipt() error {
-    if e.ReceiptURL == config.DefaultReceiptURL {
+    _, err := os.Stat(config.Path + e.ReceiptURL)
+    switch {
+    case e.ReceiptURL == config.DefaultReceiptURL:
         return fmt.Errorf("receipt is the default placeholder image")
-    }
-
-    if e.ReceiptURL == "" {
+    case e.ReceiptURL == "" :
         return fmt.Errorf("receipt URL is empty")
-    }
-
-    _, err := os.Stat(config.Path  + e.ReceiptURL)
-    if errors.Is(err, os.ErrNotExist) {
+    case errors.Is(err, os.ErrNotExist):
         return fmt.Errorf("invalid receipt URL (with path config): %s%s", config.Path, e.ReceiptURL)
-    }
-
-    if err != nil {
+    case err != nil:
         return err
+    default:
+        return nil
     }
-
-    return nil
 }
