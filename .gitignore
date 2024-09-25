@@ -30,7 +30,5 @@ go.work.sum
 # database
 *.db
 
-# file upload: receipts pictures (Exception for test and placeholder img)
-/assets/receipts/*
-!/assets/receipts/placeholder.png
-!/assets/receipts/receipt_test.png
+# file upload: receipts pictures
+/assets/receipts
