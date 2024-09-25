@@ -143,14 +143,16 @@ func (e Expense) String() string {
 }
 
 func (e Expense) Valid() error {
-    var amountZeroValue Amount
-    if e.ID == 0 || e.SessionID == 0 || e.DateTime.IsZero() || e.Amount == amountZeroValue || e.ReceiptURL == "" {
-        return fmt.Errorf("expense ID, session ID, amount, date and time, and receipt URL must be non-zero and non-empty")
+    switch {
+    case e.ID == 0 || e.SessionID == 0 || e.DateTime.IsZero() || e.ReceiptURL == "":
+        return fmt.Errorf("expense ID, session ID, date and time, and receipt URL must be non-zero and non-empty")
+    case e.Amount.Valid() != nil:
+        return fmt.Errorf("invalid amount: %v", e.Amount.Valid())
+    case e.ID < 0 || e.SessionID < 0:
+        return fmt.Errorf("expense ID and session ID can't be negative")
+    default:
+        return nil
     }
-    if err := e.Amount.Valid(); err != nil {
-        return fmt.Errorf("invalid amount: %v", err)
-    }
-    return nil
 }
 
 // TODO probably will have to test with Flutter if the img is corrupted and can't show
