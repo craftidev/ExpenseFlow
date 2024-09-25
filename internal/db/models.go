@@ -82,11 +82,14 @@ func (a Amount) Valid() error {
 }
 
 func (a *Amount) Add(other Amount) error {
+    errA := a.Valid()
+    errOther := other.Valid()
+
     switch {
-    case a.Valid() != nil:
-        return utils.LogError("invalid first amount: %v", a.Valid())
-    case other.Valid() != nil:
-        return utils.LogError("invalid second amount: %v", other.Valid())
+    case errA != nil:
+        return errA
+    case errOther != nil:
+        return errOther
     case a.Currency != other.Currency:
         return utils.LogError("currencies don't match: %v and %v", a.Currency, other.Currency)
     }
@@ -148,11 +151,12 @@ func (e Expense) String() string {
 }
 
 func (e Expense) Valid() error {
+    err := e.Amount.Valid()
     switch {
     case e.ID == 0 || e.SessionID == 0 || e.DateTime.IsZero() || e.ReceiptURL == "":
         return utils.LogError("expense ID, session ID, date and time, and receipt URL must be non-zero and non-empty")
-    case e.Amount.Valid() != nil:
-        return utils.LogError("invalid amount: %v", e.Amount.Valid())
+    case err != nil:
+        return  err
     case e.ID < 0 || e.SessionID < 0:
         return utils.LogError("expense ID and session ID can't be negative")
     default:
@@ -162,18 +166,20 @@ func (e Expense) Valid() error {
 
 func (e Expense) CheckReceipt() error {
     receiptPath := filepath.Join(config.Path, e.ReceiptURL)
-    _, err := os.Stat(receiptPath)
+    _, errOs := os.Stat(receiptPath)
+    errIsImageFile := isImageFile(config.Path + e.ReceiptURL)
+
     switch {
     case e.ReceiptURL == config.DefaultReceiptURL:
         return utils.LogError("receipt is the default placeholder image")
     case e.ReceiptURL == "" :
         return utils.LogError("receipt URL is empty")
-    case errors.Is(err, os.ErrNotExist):
-        return utils.LogError("invalid receipt URL: %s. With error: %v", receiptPath, err)
-    case err != nil:
-        return err
-    case isImageFile(config.Path + e.ReceiptURL) != nil:
-        return isImageFile(config.Path + e.ReceiptURL)
+    case errors.Is(errOs, os.ErrNotExist):
+        return utils.LogError("invalid receipt URL: %v", errOs)
+    case errOs != nil:
+        return errOs
+    case errIsImageFile != nil:
+        return errIsImageFile
     default:
         return nil
     }
@@ -199,6 +205,6 @@ func isImageFile(filePath string) error {
     case "image/jpeg", "image/png", "image/gif", "image/bmp", "image/webp":
         return nil
     default:
-        return utils.LogError("invalid receipt image type: %s", contentType)
+        return utils.LogError("invalid receipt image type %s: %s", filePath, contentType)
     }
 }
