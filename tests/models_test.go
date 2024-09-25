@@ -1,10 +1,12 @@
 package tests
 
 import (
-    "testing"
-    "time"
-    "github.com/craftidev/expenseflow/internal/db"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/craftidev/expenseflow/config"
+	"github.com/craftidev/expenseflow/internal/db"
 )
 
 
@@ -148,7 +150,7 @@ func TestCheckReceipt(t *testing.T) {
         SessionID: 1,
         Amount:    db.Amount{Value: 100, Currency: "USD"},
         DateTime:  time.Now(),
-        ReceiptURL: "/tests/assets/invalid_receipt_test",
+        ReceiptURL: "/tests/assets/receipts/invalid_receipt_test",
     }
     err = expenseWithBadExistingReceipt.CheckReceipt()
     if err == nil {
@@ -161,10 +163,35 @@ func TestCheckReceipt(t *testing.T) {
         SessionID: 1,
         Amount:    db.Amount{Value: 100, Currency: "USD"},
         DateTime:  time.Now(),
-        ReceiptURL: "/tests/assets/invalid_receipt_test",
+        ReceiptURL: "/tests/assets/receipts/invalid_receipt_test",
     }
     err = expenseWithBadExistingReceiptImageType.CheckReceipt()
     if err == nil {
         t.Errorf("expected CheckReceipt to return an error for non-compatible file")
+    }
+}
+
+func TestCheckReceiptWithProtectedFile(t *testing.T) {
+    filePath := config.Path + "/tests/assets/receipts/protected_receipt_test.png"
+
+    // Set permissions to 000
+    err := os.Chmod(filePath, 0000)
+    if err != nil {
+        t.Fatalf("failed to set file permissions before testing: %v", err)
+    }
+
+    // Run the test
+    expense := db.Expense{
+        ReceiptURL: filePath,
+    }
+    err = expense.CheckReceipt()
+    if err == nil {
+        t.Error("expected error due to permission denied")
+    }
+
+    // Restore permissions after the test
+    err = os.Chmod(filePath, 0644)
+    if err != nil {
+        t.Fatalf("failed to restore file permissions: %v", err)
     }
 }
