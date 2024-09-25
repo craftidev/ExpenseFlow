@@ -166,7 +166,7 @@ func (e Expense) CheckReceipt() error {
     case e.ReceiptURL == "" :
         return fmt.Errorf("receipt URL is empty")
     case errors.Is(err, os.ErrNotExist):
-        return fmt.Errorf("invalid receipt URL (with path config): %s%s", config.Path, e.ReceiptURL)
+        return fmt.Errorf("invalid receipt URL (with path config): %s%s. With error: : %v", config.Path, e.ReceiptURL, err)
     case err != nil:
         return err
     case IsImageFile(config.Path + e.ReceiptURL) != nil:
