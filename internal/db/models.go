@@ -6,10 +6,11 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
-    "github.com/craftidev/expenseflow/internal/utils"
 	"github.com/craftidev/expenseflow/config"
+	"github.com/craftidev/expenseflow/internal/utils"
 )
 
 // List of models: Client, Session, Amount, ExpenseType, Expense
@@ -160,14 +161,15 @@ func (e Expense) Valid() error {
 }
 
 func (e Expense) CheckReceipt() error {
-    _, err := os.Stat(config.Path + e.ReceiptURL)
+    receiptPath := filepath.Join(config.Path, e.ReceiptURL)
+    _, err := os.Stat(receiptPath)
     switch {
     case e.ReceiptURL == config.DefaultReceiptURL:
         return utils.LogError("receipt is the default placeholder image")
     case e.ReceiptURL == "" :
         return utils.LogError("receipt URL is empty")
     case errors.Is(err, os.ErrNotExist):
-        return utils.LogError("invalid receipt URL (with path config): %s%s. With error: : %v", config.Path, e.ReceiptURL, err)
+        return utils.LogError("invalid receipt URL: %s. With error: %v", receiptPath, err)
     case err != nil:
         return err
     case isImageFile(config.Path + e.ReceiptURL) != nil:
