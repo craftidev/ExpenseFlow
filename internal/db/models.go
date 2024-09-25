@@ -169,14 +169,14 @@ func (e Expense) CheckReceipt() error {
         return fmt.Errorf("invalid receipt URL (with path config): %s%s. With error: : %v", config.Path, e.ReceiptURL, err)
     case err != nil:
         return err
-    case IsImageFile(config.Path + e.ReceiptURL) != nil:
-        return IsImageFile(config.Path + e.ReceiptURL)
+    case isImageFile(config.Path + e.ReceiptURL) != nil:
+        return isImageFile(config.Path + e.ReceiptURL)
     default:
         return nil
     }
 }
 
-func IsImageFile(filePath string) error {
+func isImageFile(filePath string) error {
     receiptImage, err := os.Open(filePath)
     if err != nil {
         return fmt.Errorf("error opening receipt image: %v", err)
