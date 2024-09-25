@@ -18,95 +18,27 @@ func TestExpenseValid(t *testing.T) {
         DateTime:  time.Now(),
         ReceiptURL: "/tests/assets/valid_receipt_test.png",
     }
-
     err := validExpense.Valid()
     if err != nil {
         t.Errorf("expected valid expense, got error: %v", err)
     }
 
     var invalidExpenses [11]db.Expense
+    for i := 0; i < len(invalidExpenses); i++ {
+        invalidExpenses[i] = validExpense
+    }
 
-    invalidExpenses[0] = db.Expense{
-        ID:        0,           // 0: Invalid ID (0)
-        SessionID: 1,
-        Amount:    db.Amount{Value: 100, Currency: "USD"},
-        DateTime:  time.Now(),
-        ReceiptURL: "/tests/assets/valid_receipt_test.png",
-    }
-    invalidExpenses[1] = db.Expense{
-        ID:        1,
-        SessionID: 0,           // 01: Invalid SessionID (0)
-        Amount:    db.Amount{Value: 100, Currency: "USD"},
-        DateTime:  time.Now(),
-        ReceiptURL: "/tests/assets/valid_receipt_test.png",
-    }
-    invalidExpenses[2] = db.Expense{
-        ID:        1,
-        SessionID: 1,
-        Amount:    db.Amount{}, // 02: Invalid Amount
-        DateTime:  time.Now(),
-        ReceiptURL: "/tests/assets/valid_receipt_test.png",
-    }
-    invalidExpenses[3] = db.Expense{
-        ID:        1,
-        SessionID: 1,
-        Amount:    db.Amount{Value: 100, Currency: "USD"},
-        DateTime:  time.Time{}, // 03: Invalid DateTime
-        ReceiptURL: "/tests/assets/valid_receipt_test.png",
-    }
-    invalidExpenses[4] = db.Expense{
-        ID:        1,
-        SessionID: 1,
-        Amount:    db.Amount{Value: 100, Currency: "USD"},
-        DateTime:  time.Now(),
-        ReceiptURL: "",         // 04: Invalid ReceiptURL
-    }
-    invalidExpenses[5] = db.Expense{
-        ID:        1,
-        SessionID: 1,
-        Amount:    db.Amount{Value: -100, Currency: "USD"},
-                                // 05: Invalid neg Amount
-        DateTime:  time.Now(),
-        ReceiptURL: "/tests/assets/valid_receipt_test.png",
-    }
-    invalidExpenses[6] = db.Expense{
-        ID:        1,
-        SessionID: 1,
-        Amount:    db.Amount{Value: 100},
-                                // 06: Invalid currency
-        DateTime:  time.Now(),
-        ReceiptURL: "/tests/assets/valid_receipt_test.png",
-    }
-    invalidExpenses[7] = db.Expense{
-        ID:        1,
-        SessionID: 1,
-        Amount:    db.Amount{Currency: "USD"},
-                                // 07: Invalid value (empty)
-        DateTime:  time.Now(),
-        ReceiptURL: "/tests/assets/valid_receipt_test.png",
-    }
-    invalidExpenses[8] = db.Expense{
-        ID:        1,
-        SessionID: 1,
-        Amount:    db.Amount{Value: 0, Currency: "USD"},
-                                // 08: Invalid value (0)
-        DateTime:  time.Now(),
-        ReceiptURL: "/tests/assets/valid_receipt_test.png",
-    }
-    invalidExpenses[9] = db.Expense{
-        ID:        -1,          // 09: Invalid ID (negative)
-        SessionID: 1,
-        Amount:    db.Amount{Value: 100, Currency: "USD"},
-        DateTime:  time.Now(),
-        ReceiptURL: "/tests/assets/valid_receipt_test.png",
-    }
-    invalidExpenses[10] = db.Expense{
-        ID:        1,
-        SessionID: -1,           // 10: Invalid SessionID (negative)
-        Amount:    db.Amount{Value: 100, Currency: "USD"},
-        DateTime:  time.Now(),
-        ReceiptURL: "/tests/assets/valid_receipt_test.png",
-    }
+    invalidExpenses[0].ID = 0
+    invalidExpenses[1].SessionID = 0
+    invalidExpenses[2].Amount = db.Amount{}
+    invalidExpenses[3].DateTime = time.Time{}
+    invalidExpenses[4].ReceiptURL = ""
+    invalidExpenses[5].Amount.Value = -100
+    invalidExpenses[6].Amount = db.Amount{Value: 100}
+    invalidExpenses[7].Amount = db.Amount{Currency: "USD"}
+    invalidExpenses[8].Amount.Value = 0
+    invalidExpenses[9].ID = -1
+    invalidExpenses[10].SessionID = -1
 
     for i, invalidExpense := range invalidExpenses {
         err = invalidExpense.Valid()
@@ -144,17 +76,30 @@ func TestCheckReceipt(t *testing.T) {
         t.Errorf("unexpected error: %v", err)
     }
 
-    // Test case with existing non-image file
-    expenseWithBadExistingReceipt := db.Expense{
+    // Test case with corrupted image file
+    expenseWithReceiptNonImage := db.Expense{
         ID:        1,
         SessionID: 1,
         Amount:    db.Amount{Value: 100, Currency: "USD"},
         DateTime:  time.Now(),
-        ReceiptURL: "/tests/assets/receipts/invalid_receipt_test",
+        ReceiptURL: "/tests/assets/receipts/invalid_receipt_test.txt",
+    }
+    err = expenseWithReceiptNonImage.CheckReceipt()
+    if err == nil {
+        t.Errorf("expected CheckReceipt to return an error for corrupted file")
+    }
+
+    // Test case with corrupted image file
+    expenseWithBadExistingReceipt := db.Expense{
+        ID:        16,
+        SessionID: 1,
+        Amount:    db.Amount{Value: 100, Currency: "USD"},
+        DateTime:  time.Now(),
+        ReceiptURL: "/tests/assets/receipts/corrupted_receipt_test.png",
     }
     err = expenseWithBadExistingReceipt.CheckReceipt()
     if err == nil {
-        t.Errorf("expected CheckReceipt to return an error for non-compatible file")
+        t.Errorf("expected CheckReceipt to return an error for corrupted file")
     }
 
     // Test case with existing image file but wrong image type
@@ -198,3 +143,5 @@ func TestCheckReceiptWithProtectedFile(t *testing.T) {
         t.Fatalf("failed to restore file permissions: %v", err)
     }
 }
+
+// TODO test Sum / Add
