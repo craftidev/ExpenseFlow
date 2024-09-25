@@ -58,7 +58,7 @@ func (s Session) Valid() error {
 }
 
 
-// Amount
+// Amount (Not in DB)
 // Methods: String, Valid, Add
 type Amount struct {
     Value    float64
