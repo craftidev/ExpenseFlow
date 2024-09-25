@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+    "github.com/craftidev/expenseflow/internal/utils"
 	"github.com/craftidev/expenseflow/config"
 )
 
@@ -27,7 +28,7 @@ func (c Client) String() string {
 
 func(c Client) Valid() error {
     if c.ID == 0 || c.Name == "" {
-        return fmt.Errorf("client ID and name must be non-zero and non-empty")
+        return utils.LogError("client ID and name must be non-zero and non-empty")
     }
     return nil
 }
@@ -49,10 +50,10 @@ func (s Session) String() string {
 
 func (s Session) Valid() error {
     if s.ID == 0 || s.ClientID == 0 || s.Name == "" || s.Address == "" || s.StartAt.IsZero() || s.EndAt.IsZero() {
-        return fmt.Errorf("session ID, client ID, name, address, start and end times must be non-zero and non-empty")
+        return utils.LogError("session ID, client ID, name, address, start and end times must be non-zero and non-empty")
     }
     if s.StartAt.After(s.EndAt) {
-        return fmt.Errorf("start time must be before end time (session ID: %d)", s.ID)
+        return utils.LogError("start time must be before end time (session ID: %d)", s.ID)
     }
     return nil
 }
@@ -71,10 +72,10 @@ func (a Amount) String() string {
 
 func (a Amount) Valid() error {
     if a.Currency == "" || a.Value == 0 {
-        return fmt.Errorf("amount value and currency must be non-empty and non-zero")
+        return utils.LogError("amount value and currency must be non-empty and non-zero")
     }
     if a.Value < 0 {
-        return fmt.Errorf("amount value must be positive")
+        return utils.LogError("amount value must be positive")
     }
     return nil
 }
@@ -82,11 +83,11 @@ func (a Amount) Valid() error {
 func (a *Amount) Add(other Amount) error {
     switch {
     case a.Valid() != nil:
-        return fmt.Errorf("invalid first amount: %v", a.Valid())
+        return utils.LogError("invalid first amount: %v", a.Valid())
     case other.Valid() != nil:
-        return fmt.Errorf("invalid second amount: %v", other.Valid())
+        return utils.LogError("invalid second amount: %v", other.Valid())
     case a.Currency != other.Currency:
-        return fmt.Errorf("currencies don't match: %v and %v", a.Currency, other.Currency)
+        return utils.LogError("currencies don't match: %v and %v", a.Currency, other.Currency)
     }
 
     a.Value += other.Value
@@ -123,7 +124,7 @@ func (et ExpenseType) String() string {
 
 func (et ExpenseType) Valid() error {
     if et.ID == 0 || et.Name == "" {
-        return fmt.Errorf("expense type ID and name must be non-zero and non-empty")
+        return utils.LogError("expense type ID and name must be non-zero and non-empty")
     }
     return nil
 }
@@ -148,11 +149,11 @@ func (e Expense) String() string {
 func (e Expense) Valid() error {
     switch {
     case e.ID == 0 || e.SessionID == 0 || e.DateTime.IsZero() || e.ReceiptURL == "":
-        return fmt.Errorf("expense ID, session ID, date and time, and receipt URL must be non-zero and non-empty")
+        return utils.LogError("expense ID, session ID, date and time, and receipt URL must be non-zero and non-empty")
     case e.Amount.Valid() != nil:
-        return fmt.Errorf("invalid amount: %v", e.Amount.Valid())
+        return utils.LogError("invalid amount: %v", e.Amount.Valid())
     case e.ID < 0 || e.SessionID < 0:
-        return fmt.Errorf("expense ID and session ID can't be negative")
+        return utils.LogError("expense ID and session ID can't be negative")
     default:
         return nil
     }
@@ -162,11 +163,11 @@ func (e Expense) CheckReceipt() error {
     _, err := os.Stat(config.Path + e.ReceiptURL)
     switch {
     case e.ReceiptURL == config.DefaultReceiptURL:
-        return fmt.Errorf("receipt is the default placeholder image")
+        return utils.LogError("receipt is the default placeholder image")
     case e.ReceiptURL == "" :
-        return fmt.Errorf("receipt URL is empty")
+        return utils.LogError("receipt URL is empty")
     case errors.Is(err, os.ErrNotExist):
-        return fmt.Errorf("invalid receipt URL (with path config): %s%s. With error: : %v", config.Path, e.ReceiptURL, err)
+        return utils.LogError("invalid receipt URL (with path config): %s%s. With error: : %v", config.Path, e.ReceiptURL, err)
     case err != nil:
         return err
     case isImageFile(config.Path + e.ReceiptURL) != nil:
@@ -179,7 +180,7 @@ func (e Expense) CheckReceipt() error {
 func isImageFile(filePath string) error {
     receiptImage, err := os.Open(filePath)
     if err != nil {
-        return fmt.Errorf("error opening receipt image: %v", err)
+        return utils.LogError("error opening receipt image: %v", err)
     }
     defer receiptImage.Close()
 
@@ -187,7 +188,7 @@ func isImageFile(filePath string) error {
     buffer := make([]byte, 512)
     n, err := receiptImage.Read(buffer)
     if err != nil && err != io.EOF {
-        return fmt.Errorf("error reading headers of receipt image: %v", err)
+        return utils.LogError("error reading headers of receipt image: %v", err)
     }
 
     buffer = buffer[:n] // Adjust buffer size to the actual number of bytes read
@@ -196,6 +197,6 @@ func isImageFile(filePath string) error {
     case "image/jpeg", "image/png", "image/gif", "image/bmp", "image/webp":
         return nil
     default:
-        return fmt.Errorf("invalid receipt image type: %s", contentType)
+        return utils.LogError("invalid receipt image type: %s", contentType)
     }
 }
