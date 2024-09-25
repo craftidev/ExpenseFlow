@@ -14,8 +14,8 @@ import (
 )
 
 
-func ConnectDB(dbPath string) *sql.DB {
-    db, err := sql.Open("sqlite3", dbPath)
+func ConnectDB() *sql.DB {
+    db, err := sql.Open("sqlite3", config.DBPath)
     if err != nil {
         log.Fatalf("failed to open database: %v", err)
     }
@@ -23,12 +23,12 @@ func ConnectDB(dbPath string) *sql.DB {
 }
 
 func InitDB(db *sql.DB) {
-    if _, err := os.Stat(filepath.Join(config.Path, "internal", "db", "expenseflow.db")); !os.IsNotExist(err) {
+    if _, err := os.Stat(config.DBPath); !os.IsNotExist(err) {
         log.Println("Database already exists. Skipping initialization.")
         return
     }
 
-    filesPath := filepath.Join(config.Path, "internal", "db", "migrations")
+    filesPath := filepath.Join(config.MigrationsDirPath)
     schemaDirectory := os.DirFS(filesPath)
     schemaFiles, err := fs.Glob(schemaDirectory, "*.sql")
     if err != nil {
@@ -47,10 +47,13 @@ func InitDB(db *sql.DB) {
             log.Fatalf("failed to apply migration %03d: %v", i + 1, err)
         }
     }
+
+    log.Println("Database created.")
 }
 
 func CloseDB(db *sql.DB) {
     if err := db.Close(); err != nil {
         log.Fatalf("failed to close database: %v", err)
     }
+    log.Println("Database closed.")
 }
