@@ -1,13 +1,19 @@
 package utils
 
 import (
+	"errors"
+	"fmt"
     "log"
-    "errors"
-    "fmt"
+	"runtime"
 )
+
 
 func LogError(format string, args ...interface{}) error {
     errMessage := fmt.Sprintf(format, args...)
-    log.Printf("Error: %s", errMessage)
+
+    // Log the error
+    pc, fn, line, _ := runtime.Caller(1)
+    log.Printf("[error] %s:%d\n\t[call] %s:\n\t[msg] %s\n", fn, line, runtime.FuncForPC(pc).Name(), errMessage)
+
     return errors.New(errMessage)
 }
