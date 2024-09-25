@@ -88,7 +88,7 @@ go test ./tests
 ```
 
 ### Install
-modify path in `/config/config.go`
+Modify path in `/config/config.go`
 
 ## Important decisions
 ### Choice of stack: Go / Flutter / SQLite:
