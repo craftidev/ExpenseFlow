@@ -1,10 +1,13 @@
 package db
 
 import (
+	"errors"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
 	"time"
-    "os"
-    "errors"
+
 	"github.com/craftidev/expenseflow/config"
 )
 
@@ -155,7 +158,6 @@ func (e Expense) Valid() error {
     }
 }
 
-// TODO probably will have to test with Flutter if the img is corrupted and can't show
 func (e Expense) CheckReceipt() error {
     _, err := os.Stat(config.Path + e.ReceiptURL)
     switch {
@@ -167,7 +169,33 @@ func (e Expense) CheckReceipt() error {
         return fmt.Errorf("invalid receipt URL (with path config): %s%s", config.Path, e.ReceiptURL)
     case err != nil:
         return err
+    case IsImageFile(config.Path + e.ReceiptURL) != nil:
+        return IsImageFile(config.Path + e.ReceiptURL)
     default:
         return nil
+    }
+}
+
+func IsImageFile(filePath string) error {
+    receiptImage, err := os.Open(filePath)
+    if err != nil {
+        return fmt.Errorf("error opening receipt image: %v", err)
+    }
+    defer receiptImage.Close()
+
+    // Read file header to determine content type
+    buffer := make([]byte, 512)
+    n, err := receiptImage.Read(buffer)
+    if err != nil && err != io.EOF {
+        return fmt.Errorf("error reading headers of receipt image: %v", err)
+    }
+
+    buffer = buffer[:n] // Adjust buffer size to the actual number of bytes read
+    contentType := http.DetectContentType(buffer)
+    switch contentType {
+    case "image/jpeg", "image/png", "image/gif", "image/bmp", "image/webp":
+        return nil
+    default:
+        return fmt.Errorf("invalid receipt image type: %s", contentType)
     }
 }
