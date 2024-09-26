@@ -92,10 +92,12 @@ func (a *Amount) Add(other Amount) error {
         return errOther
     case a.Currency != other.Currency:
         return utils.LogError("currencies don't match: %v and %v", a.Currency, other.Currency)
+    case a.Value + other.Value > config.MaxFloat:
+        return utils.LogError("sum exceeds maximum float64 value")
+    default:
+        a.Value += other.Value
+        return nil
     }
-
-    a.Value += other.Value
-    return nil
 }
 
 func (Amount) Sum(amounts []Amount) ([]Amount, error) {
@@ -103,6 +105,12 @@ func (Amount) Sum(amounts []Amount) ([]Amount, error) {
     for _, amount := range amounts {
         if err := amount.Valid(); err != nil {
             return nil, err
+        }
+        if (sumsByCurrency[amount.Currency] + amount.Value) > config.MaxFloat {
+            return nil, utils.LogError(
+                "sum exceeds maximum float64 value: %f + %f",
+                sumsByCurrency[amount.Currency], amount.Value,
+            )
         }
         sumsByCurrency[amount.Currency] += amount.Value
     }
