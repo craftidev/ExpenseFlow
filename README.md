@@ -139,6 +139,9 @@ I chose to have non nullable in the DB. A placeholder img. So when I test Expens
 The latter will make sure the file exist and is not the placeholder.
 I think the user could add the picture later in their workflow when adding expense.
 
+### Hard limiting Float (for Amount.Value operations)
+After creating some test to identify when Add or Sum were creating a float `> math.MaxFloat64`. I realized they were weird behaviors. You can't subtract a small float from a giant one, the result is unchanged. So I decided to hard code an unrealistic max in `/config/config.go` at `1_000_000_000.0`
+
 ## Problems and solutions
 🚧
 ## Design choices
