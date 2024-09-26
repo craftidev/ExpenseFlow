@@ -139,11 +139,11 @@ ExpenseFlow/
 Everything will use the standard library "time" and will record UTC timestamps. Making the user able travel in different timezone and not confuse any logic. Flutter will be the one taking care of the preferred display for the user.
 
 ### Receipt handling
-I chose to have non nullable in the DB. A placeholder img. So when I test Expense for validation it's not the same as when I CheckReceipt.
+I chose to have non-nullable in the DB. A placeholder IMG. So when I test Expense for validation it's not the same as when I `CheckReceipt()`.
 The latter will make sure the file exist and is not the placeholder.
 I think the user could add the picture later in their workflow when adding expense.
 
-### Hard limiting Float (for Amount.Value operations)
+### Hard limiting Float (for `Amount.Value` operations)
 After creating some test to identify when Add or Sum were creating a float `> math.MaxFloat64`. I realized they were weird behaviors. You can't subtract a small float from a giant one, the result is unchanged. So I decided to hard code an unrealistic max in `/config/config.go` at `1_000_000_000.0`
 
 ## Problems and solutions
@@ -156,6 +156,6 @@ After creating some test to identify when Add or Sum were creating a float `> ma
 - What are the models/properties I'm missing?
 - Is there a use to know outgoing or incoming travels?
 - Use for town goal?
-- Expense.Location just town names?
-- Does Client need contact info?
-- Does Expense need Description or OtherInfo?
+- `Expense.Location` just town names?
+- Does `Client` need contact info?
+- Does `Expense` need `Description` or `OtherInfo`?
