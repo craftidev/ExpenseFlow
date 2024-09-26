@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -14,7 +15,7 @@ func TestExpenseValid(t *testing.T) {
     validExpense := db.Expense{
         ID:        1,
         SessionID: 1,
-        Amount:    db.Amount{Value: 100, Currency: "USD"},
+        Amount:    db.Amount{Value: 100.20, Currency: "USD"},
         DateTime:  time.Now(),
         ReceiptURL: "/tests/assets/valid_receipt_test.png",
     }
@@ -28,17 +29,17 @@ func TestExpenseValid(t *testing.T) {
         invalidExpenses[i] = validExpense
     }
 
-    invalidExpenses[0].ID = 0
-    invalidExpenses[1].SessionID = 0
-    invalidExpenses[2].Amount = db.Amount{}
-    invalidExpenses[3].DateTime = time.Time{}
-    invalidExpenses[4].ReceiptURL = ""
+    invalidExpenses[0].ID           = 0
+    invalidExpenses[1].SessionID    = 0
+    invalidExpenses[2].Amount       = db.Amount{}
+    invalidExpenses[3].DateTime     = time.Time{}
+    invalidExpenses[4].ReceiptURL   = ""
     invalidExpenses[5].Amount.Value = -100
-    invalidExpenses[6].Amount = db.Amount{Value: 100}
-    invalidExpenses[7].Amount = db.Amount{Currency: "USD"}
+    invalidExpenses[6].Amount       = db.Amount{Value: 100.20}
+    invalidExpenses[7].Amount       = db.Amount{Currency: "USD"}
     invalidExpenses[8].Amount.Value = 0
-    invalidExpenses[9].ID = -1
-    invalidExpenses[10].SessionID = -1
+    invalidExpenses[9].ID           = -1
+    invalidExpenses[10].SessionID   = -1
 
     for i, invalidExpense := range invalidExpenses {
         err = invalidExpense.Valid()
@@ -80,7 +81,7 @@ func TestCheckReceipt(t *testing.T) {
     expenseWithReceiptNonImage := db.Expense{
         ID:        1,
         SessionID: 1,
-        Amount:    db.Amount{Value: 100, Currency: "USD"},
+        Amount:    db.Amount{Value: 100.20, Currency: "USD"},
         DateTime:  time.Now(),
         ReceiptURL: "/tests/assets/receipts/invalid_receipt_test.txt",
     }
@@ -93,7 +94,7 @@ func TestCheckReceipt(t *testing.T) {
     expenseWithBadExistingReceipt := db.Expense{
         ID:        16,
         SessionID: 1,
-        Amount:    db.Amount{Value: 100, Currency: "USD"},
+        Amount:    db.Amount{Value: 100.20, Currency: "USD"},
         DateTime:  time.Now(),
         ReceiptURL: "/tests/assets/receipts/corrupted_receipt_test.png",
     }
@@ -145,3 +146,38 @@ func TestCheckReceiptWithProtectedFile(t *testing.T) {
 }
 
 // TODO test Sum / Add
+func TestAmountAdd(t *testing.T) {
+    // Valid Add
+    amountA := db.Amount{Value: 100.20, Currency: "USD"}
+    amountB := db.Amount{Value: 200.20, Currency: "USD"}
+
+    err := amountA.Add(amountB)
+    if err != nil {
+        t.Errorf("expected no error, got: %v", err)
+    }
+
+    if amountA.Value != 300.40 {
+        t.Errorf("expected sum to be 300, got: %f", amountA.Value)
+    }
+
+    // Invalid Add (different Currency)
+    amountC := db.Amount{Value: 100.20, Currency: "EUR"}
+    err = amountA.Add(amountC)
+    if err == nil {
+        t.Error("expected error (different Currency), got no error")
+    }
+
+    // Invalid Add (>= custom max float (define in /config/config.go))
+    valueProvokeMaxFloat64 := config.MaxFloat - amountA.Value + 0.01
+    fmt.Println(valueProvokeMaxFloat64)
+    amountG := db.Amount{Value: valueProvokeMaxFloat64, Currency: "USD"}
+    err = amountA.Add(amountG)
+    if err == nil {
+        t.Errorf("expected error (>= custom max float (define in /config/config.go)), got no error with: %v", amountA.Value)
+    }
+}
+
+func TestAmountSum(t *testing.T) {
+    // Invalid Sum (>= custom max float (define in /config/config.go))
+
+}
