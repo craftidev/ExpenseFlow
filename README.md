@@ -86,6 +86,10 @@ Testing:
 ```bash
 go test ./tests
 ```
+Running:
+```bash
+go run ./cmd/expenseflow
+```
 
 ### Install
 Modify path in `/config/config.go`
