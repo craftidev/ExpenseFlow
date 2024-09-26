@@ -69,7 +69,7 @@ type Amount struct {
 }
 
 func (a Amount) String() string {
-    return fmt.Sprintf("%.2f %s", a.Value, a.Currency)
+    return fmt.Sprintf("{%.2f %s}", a.Value, a.Currency)
 }
 
 func (a Amount) Valid() error {
@@ -103,7 +103,7 @@ func (a *Amount) Add(other Amount) error {
 
 
 // AmountList (Not in DB)
-// TODO Methods: String, Valid, Equal, Sum
+// Methods: String, Valid, Equal, Sum
 type AmountList []Amount
 
 func (a AmountList) String() string {
@@ -111,7 +111,7 @@ func (a AmountList) String() string {
     for _, amount := range a {
         result += fmt.Sprintf("%s, ", amount.String())
     }
-    return result[:len(result)-2]
+    return result[:len(result) - 2]
 }
 
 func (a AmountList) Valid() error {
@@ -246,7 +246,7 @@ func (e Expense) CheckReceipt() error {
     case errors.Is(errOs, os.ErrNotExist):
         return utils.LogError("invalid receipt URL: %v", errOs)
     case errOs != nil:
-        return errOs
+        return utils.LogError("undefined file error: %v", errOs)
     case errIsImageFile != nil:
         return errIsImageFile
     default:
