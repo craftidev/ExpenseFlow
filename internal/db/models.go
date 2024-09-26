@@ -13,8 +13,9 @@ import (
 	"github.com/craftidev/expenseflow/internal/utils"
 )
 
-// List of models: Client, Session, Amount, ExpenseType, Expense
-// (Not its own DB table: Amount)
+
+// List of models: Client, Session, ExpenseType, Expense
+// Plus (not its own DB table): Amount, AmountList
 
 // Client
 // Methods: String, Valid
@@ -100,13 +101,73 @@ func (a *Amount) Add(other Amount) error {
     }
 }
 
-func (Amount) Sum(amounts []Amount) ([]Amount, error) {
-    sumsByCurrency := make(map[string]float64)
-    for _, amount := range amounts {
+
+// AmountList (Not in DB)
+// TODO Methods: String, Valid, Equal, Sum
+type AmountList []Amount
+
+func (a AmountList) String() string {
+    var result string
+    for _, amount := range a {
+        result += fmt.Sprintf("%s, ", amount.String())
+    }
+    return result[:len(result)-2]
+}
+
+func (a AmountList) Valid() error {
+    if len(a) == 0 {
+        return utils.LogError("list of amounts is empty")
+    }
+
+    for _, amount := range a {
         if err := amount.Valid(); err != nil {
-            return nil, err
+            return err
         }
-        if (sumsByCurrency[amount.Currency] + amount.Value) > config.MaxFloat {
+    }
+    return nil
+}
+
+func (a AmountList) Equal(other AmountList) (bool, error) {
+    if err := a.Valid(); err != nil {
+        return false, err
+    }
+    if err := other.Valid(); err != nil {
+        return false, err
+    }
+    if len(a) != len(other) {
+        return false, nil
+    }
+
+    temp := make(AmountList, len(other))
+    copy(temp, other)
+
+    for _, amountA := range a {
+        found := false
+        for i, v := range temp {
+            if v == amountA {
+                temp = append(temp[:i], temp[i + 1:]...)
+                found = true
+                break
+            }
+        }
+
+        if !found {
+            return false, nil
+        }
+    }
+
+    return true, nil
+}
+
+func (a AmountList) Sum() (AmountList, error) {
+    if err := a.Valid(); err != nil {
+        return nil, err
+    }
+
+    sumsByCurrency := make(map[string]float64)
+    for _, amount := range a {
+        if  sum := sumsByCurrency[amount.Currency] + amount.Value;
+            sum > config.MaxFloat {
             return nil, utils.LogError(
                 "sum exceeds maximum float64 value: %f + %f",
                 sumsByCurrency[amount.Currency], amount.Value,
@@ -115,11 +176,11 @@ func (Amount) Sum(amounts []Amount) ([]Amount, error) {
         sumsByCurrency[amount.Currency] += amount.Value
     }
 
-    var resultFormat []Amount
+    result := make([]Amount, 0, len(sumsByCurrency))
     for currency, sum := range sumsByCurrency {
-        resultFormat = append(resultFormat, Amount{sum, currency})
+        result = append(result, Amount{Value: sum, Currency: currency})
     }
-    return resultFormat, nil
+    return result, nil
 }
 
 
