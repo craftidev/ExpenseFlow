@@ -145,7 +145,6 @@ func TestCheckReceiptWithProtectedFile(t *testing.T) {
     }
 }
 
-// TODO test Sum / Add
 func TestAmountAdd(t *testing.T) {
     // Valid Add
     amountA := db.Amount{Value: 100.20, Currency: "USD"}
@@ -178,6 +177,60 @@ func TestAmountAdd(t *testing.T) {
 }
 
 func TestAmountSum(t *testing.T) {
-    // Invalid Sum (>= custom max float (define in /config/config.go))
+    // Valid Sum
+    amountA := db.Amount{Value: 223.41, Currency: "USD"}
+    amountB := db.Amount{Value: 122.4, Currency: "USD"}
+    amountC := db.Amount{Value: 123.3, Currency: "USD"}
+    amountD := db.Amount{Value: 223.14, Currency: "EUR"}
+    amountE := db.Amount{Value: 121.4, Currency: "EUR"}
+    amountF := db.Amount{Value: 023.3, Currency: "EUR"}
+    amounts := db.AmountList{
+        amountA, amountB, amountC, amountD, amountE, amountF,
+    }
 
+    expectedResult := db.AmountList{
+        db.Amount{Value: 367.84, Currency: "EUR"},
+        db.Amount{Value: 469.11, Currency: "USD"},
+    }
+
+    res, err := amounts.Sum()
+    if err != nil {
+        t.Errorf("unexpected error on valid AmountList: %v", err)
+    }
+
+    ok, err := res.Equal(expectedResult)
+    if err != nil {
+        t.Errorf("unexpected error on valid AmountList: %v", err)
+    }
+    if !ok {
+        t.Errorf("expected sum to be: %v, got: %v", expectedResult, res)
+    }
+
+    // Wrong Sum
+    expectedResult[0].Value = 1
+    ok, _ = res.Equal(expectedResult)
+    if ok {
+        t.Errorf(
+            "expected sum error (wrong sum), got no error with: %v, compared to: %v",
+            expectedResult, res,
+        )
+    }
+
+    // Invalid Sum (>= custom max float (define in /config/config.go))
+    amountG := db.Amount{Value: config.MaxFloat, Currency: "EUR"}
+    amounts = append(amounts, amountG)
+    res, err = amounts.Sum()
+    if err == nil {
+        t.Errorf(
+            "expected sum error (custom max float overflow), got no error with: %v, with a MaxFloat of: %v reached",
+            res, config.MaxFloat,
+        )
+    }
+
+    // Invalid Sum (empty list)
+    amounts = db.AmountList{}
+    _, err = amounts.Sum()
+    if err == nil {
+        t.Error("expected error (empty list), got no error")
+    }
 }
