@@ -1,4 +1,4 @@
-package crud
+package db
 
 import (
 	"database/sql"
