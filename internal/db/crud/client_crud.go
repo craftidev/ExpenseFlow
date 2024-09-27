@@ -10,7 +10,7 @@ import (
 
 
 func CreateClient(database *sql.DB, client db.Client) (int, error) {
-    if err := client.Valid(); err != nil {
+    if err := client.PreInsertValid(); err != nil {
         return 0, err
     }
     ok, err := CheckClientNameIsUnique(database, client)
