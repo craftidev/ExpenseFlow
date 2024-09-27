@@ -146,6 +146,9 @@ I think the user could add the picture later in their workflow when adding expen
 ### Hard limiting Float (for `Amount.Value` operations)
 After creating some test to identify when Add or Sum were creating a float `> math.MaxFloat64`. I realized they were weird behaviors. You can't subtract a small float from a giant one, the result is unchanged. So I decided to hard code an unrealistic max in `/config/config.go` at `1_000_000_000.0`
 
+### Datatype for IDs
+sqlite3 drivers are returning `int64` for ID columns. I decided to stick with `int` datatype in go (32 or 64 depending on the machine running.) It's very unlikely that I'll ever need `int64`, but I added a validation with `Fatal` if it ever occurs.
+
 ## Problems and solutions
 🚧
 ## Design choices
