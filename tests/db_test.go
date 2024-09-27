@@ -1,39 +1,39 @@
 package tests
 
 import (
-    "database/sql"
-    "testing"
+	"database/sql"
+	"log"
+	"os"
+	"testing"
 
-    "github.com/craftidev/expenseflow/internal/db"
+	"github.com/craftidev/expenseflow/internal/db"
 )
 
-func setupInMemoryDB() (*sql.DB, error) {
+
+var database *sql.DB
+func TestMain(m *testing.M) {
     // Use SQLite's in-memory DB for testing
-    database, err := db.ConnectDB(":memory:")
+    var err error
+    database, err = db.ConnectDB(":memory:")
     if err != nil {
-        return nil, err
+        log.Fatalf("Failed to connect to in-memory database: %v", err)
     }
 
     if err := db.InitDB(":memory:", database); err != nil {
-        return nil, err
+        log.Fatalf("Failed to initialize in-memory database: %v", err)
     }
 
-    return database, nil
-}
+    exitCode := m.Run()
 
-func TestConnectDB(t *testing.T) {
-    database, err := setupInMemoryDB()
-    if err != nil {
-        t.Fatalf("Failed to connect to in-memory database: %v", err)
+    if err := db.CloseDB(database); err != nil {
+        log.Fatalf("Failed to close database: %v", err)
     }
-
-    defer db.CloseDB(database)
+    os.Exit(exitCode)
 }
 
 func TestInitDB(t *testing.T) {
-    database, err := setupInMemoryDB()
-    if err != nil {
-        t.Fatalf("Failed to initialize in-memory database: %v", err)
+    if database == nil {
+        t.Fatal("Expected the in-memory database to be set up, but it was nil")
     }
 
     // Test some initial state
@@ -41,7 +41,6 @@ func TestInitDB(t *testing.T) {
     if err != nil {
         t.Fatalf("Failed to query table names: %v", err)
     }
-
     defer rows.Close()
 
     var tables []string
@@ -55,18 +54,5 @@ func TestInitDB(t *testing.T) {
 
     if len(tables) == 0 {
         t.Error("Expected some tables to be created, but none were found")
-    }
-
-    db.CloseDB(database)
-}
-
-func TestCloseDB(t *testing.T) {
-    database, err := setupInMemoryDB()
-    if err != nil {
-        t.Fatalf("Failed to connect to in-memory database: %v", err)
-    }
-
-    if err := db.CloseDB(database); err != nil {
-        t.Errorf("Failed to close database: %v", err)
     }
 }
