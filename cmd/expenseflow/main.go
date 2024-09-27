@@ -1,16 +1,17 @@
 package main
 
 import (
-    "log"
-    "os"
-    "github.com/craftidev/expenseflow/internal/db"
+	"log"
+	"os"
+
+	"github.com/craftidev/expenseflow/internal/db"
 )
 
 
 func setupLogging() {
     logFile, err := os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
     if err != nil {
-        log.Fatalf("Failed to open log file: %v", err)
+        log.Fatalf("[fatal] Failed to open log file: %v", err)
     }
 
     log.SetOutput(logFile)
@@ -21,10 +22,21 @@ func setupLogging() {
 func main() {
     setupLogging()
 
-    database := db.ConnectDB()
-    defer db.CloseDB(database)
+    database, err := db.ConnectDB()
+    if err != nil {
+        log.Fatalf("[fatal] Failed to connect to database: %v", err)
+    }
 
-    db.InitDB(database)
+    defer func() {
+        if err := db.CloseDB(database); err != nil {
+            log.Fatalf("[fatal] Failed to close database: %v", err)
+        }
+    }()
+
+
+    if err := db.InitDB(database); err != nil {
+        log.Fatalf("[fatal] Failed to initialize database: %v", err)
+    }
 
     // TODO: Implement CRUD
     log.Println("ExpenseFlow DB connection established")
