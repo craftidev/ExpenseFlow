@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/craftidev/expenseflow/config"
 	"github.com/craftidev/expenseflow/internal/db"
 )
 
@@ -22,7 +23,7 @@ func setupLogging() {
 func main() {
     setupLogging()
 
-    database, err := db.ConnectDB()
+    database, err := db.ConnectDB(config.DBPath)
     if err != nil {
         log.Fatalf("[fatal] Failed to connect to database: %v", err)
     }
@@ -34,7 +35,7 @@ func main() {
     }()
 
 
-    if err := db.InitDB(database); err != nil {
+    if err := db.InitDB(config.DBPath, database); err != nil {
         log.Fatalf("[fatal] Failed to initialize database: %v", err)
     }
 

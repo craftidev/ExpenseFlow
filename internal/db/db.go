@@ -15,16 +15,16 @@ import (
 )
 
 
-func ConnectDB() (*sql.DB, error) {
-    db, err := sql.Open("sqlite3", config.DBPath)
+func ConnectDB(DBPath string, ) (*sql.DB, error) {
+    db, err := sql.Open("sqlite3", DBPath)
     if err != nil {
         return nil, utils.LogError("failed to open database: %v", err)
     }
     return db, nil
 }
 
-func InitDB(db *sql.DB) error {
-    if _, err := os.Stat(config.DBPath); !os.IsNotExist(err) {
+func InitDB(DBPath string, db *sql.DB) error {
+    if _, err := os.Stat(DBPath); !os.IsNotExist(err) {
         log.Println("Database already exists. Skipping initialization.")
         return nil
     }
