@@ -66,7 +66,6 @@ func TestCloseDB(t *testing.T) {
         t.Fatalf("Failed to connect to in-memory database: %v", err)
     }
 
-    // Test closing the DB
     if err := db.CloseDB(database); err != nil {
         t.Errorf("Failed to close database: %v", err)
     }
