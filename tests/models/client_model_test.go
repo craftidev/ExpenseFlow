@@ -23,6 +23,11 @@ func TestClientValidation(t *testing.T) {
         t.Error("expected error for invalid client with zero ID")
     }
 
+    // Test case with valid client for PreInsert
+    if err := client.PreInsertValid(); err == nil {
+        t.Error("expected error for invalid client with zero ID")
+    }
+
     // Test case with invalid client (zero name)
     client.ID = 1
     client.Name = ""
