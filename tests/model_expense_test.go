@@ -11,6 +11,8 @@ import (
 )
 
 
+// Test Amount too has it is part of it and combined/mapped in DB
+
 func TestExpenseValid(t *testing.T) {
     validExpense := db.Expense{
         ID:        1,
