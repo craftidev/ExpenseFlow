@@ -40,5 +40,5 @@ func main() {
     }
 
     // TODO: Implement CRUD
-    log.Println("ExpenseFlow DB connection established")
+    log.Println("[info] ExpenseFlow DB connection established")
 }

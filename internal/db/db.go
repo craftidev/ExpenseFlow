@@ -25,7 +25,7 @@ func ConnectDB(DBPath string, ) (*sql.DB, error) {
 
 func InitDB(DBPath string, db *sql.DB) error {
     if _, err := os.Stat(DBPath); !os.IsNotExist(err) {
-        log.Println("Database already exists. Skipping initialization.")
+        log.Println("[info] Database already exists. Skipping initialization.")
         return nil
     }
 
@@ -49,7 +49,7 @@ func InitDB(DBPath string, db *sql.DB) error {
         }
     }
 
-    log.Println("Database created.")
+    log.Println("[info] Database created.")
     return nil
 }
 
@@ -57,6 +57,6 @@ func CloseDB(db *sql.DB) error {
     if err := db.Close(); err != nil {
         return utils.LogError("failed to close database: %v", err)
     }
-    log.Println("Database closed.")
+    log.Println("[info] Database closed.")
     return nil
 }
