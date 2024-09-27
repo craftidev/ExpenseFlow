@@ -18,7 +18,7 @@ import (
 // Plus (not its own DB table): Amount, AmountList
 
 // Client
-// Methods: String, Valid
+// Methods: String, PreInsertValid, Valid
 type Client struct {
     ID   int
     Name string
@@ -28,9 +28,9 @@ func (c Client) String() string {
     return fmt.Sprintf(c.Name)
 }
 
-func(c Client) Valid() error {
-    if c.ID == 0 || c.Name == "" {
-        return utils.LogError("client ID and name must be non-zero and non-empty")
+func(c Client) PreInsertValid() error {
+    if c.Name == "" {
+        return utils.LogError("name must be non-zero")
     }
     if len([]rune(c.Name)) > 100 {
         return utils.LogError("client name exceeds maximum length of 100 characters")
@@ -38,8 +38,15 @@ func(c Client) Valid() error {
     return nil
 }
 
+func (c Client) Valid() error {
+    if c.ID <= 0 {
+        return utils.LogError("client ID must be positive and non-zero")
+    }
+    return c.PreInsertValid()
+}
+
 // Session
-// Methods: String, Valid
+// Methods: String, PreInsertValid, Valid
 type Session struct {
     ID       int
     ClientID int
@@ -53,14 +60,21 @@ func (s Session) String() string {
     return fmt.Sprintf(s.Name)
 }
 
-func (s Session) Valid() error {
-    if s.ID == 0 || s.ClientID == 0 || s.Name == "" || s.Address == "" || s.StartAt.IsZero() || s.EndAt.IsZero() {
-        return utils.LogError("session ID, client ID, name, address, start and end times must be non-zero and non-empty")
+func (s Session) PreInsertValid() error {
+    if s.ClientID == 0 || s.Name == "" || s.Address == "" || s.StartAt.IsZero() || s.EndAt.IsZero() {
+        return utils.LogError("client ID, name, address, start and end times must be positive and non-zero")
     }
     if s.StartAt.After(s.EndAt) {
         return utils.LogError("start time must be before end time (session ID: %d)", s.ID)
     }
     return nil
+}
+
+func (s Session) Valid() error {
+    if s.ID <= 0 {
+        return utils.LogError("session ID must be positive and non-zero")
+    }
+    return s.PreInsertValid()
 }
 
 
@@ -158,7 +172,6 @@ func (a AmountList) Equal(other AmountList) (bool, error) {
             return false, nil
         }
     }
-
     return true, nil
 }
 
@@ -188,7 +201,7 @@ func (a AmountList) Sum() (AmountList, error) {
 
 
 // ExpenseType
-// Methods: String, Valid
+// Methods: String, PreInsertValid, Valid
 type ExpenseType struct {
     ID   int
     Name string
@@ -198,16 +211,23 @@ func (et ExpenseType) String() string {
     return fmt.Sprintf(et.Name)
 }
 
-func (et ExpenseType) Valid() error {
-    if et.ID == 0 || et.Name == "" {
-        return utils.LogError("expense type ID and name must be non-zero and non-empty")
+func (et ExpenseType) PreInsertValid() error {
+    if et.Name == "" {
+        return utils.LogError("ame must be non-zero")
     }
     return nil
 }
 
+func (et ExpenseType) Valid() error {
+    if et.ID <= 0 {
+        return utils.LogError("expense type ID must be positive and non-zero")
+    }
+    return et.PreInsertValid()
+}
+
 
 // Expense
-// Methods: String, Valid, CheckReceipt
+// Methods: String, PreInsertValid, CheckReceipt
 type Expense struct {
     ID         int
     SessionID  int
@@ -219,14 +239,19 @@ type Expense struct {
 }
 
 func (e Expense) String() string {
-    return fmt.Sprintf("%v (%d)", e.Amount, e.TypeID)
+    return fmt.Sprintf(
+        "%v (%d)\nat %v (%v)\nreceipt: %v",
+        e.Amount, e.TypeID, e.Location, e.DateTime, e.ReceiptURL,
+    )
 }
 
-func (e Expense) Valid() error {
+func (e Expense) PreInsertValid() error {
     err := e.Amount.Valid()
     switch {
-    case e.ID == 0 || e.SessionID == 0 || e.DateTime.IsZero() || e.ReceiptURL == "":
-        return utils.LogError("expense ID, session ID, date and time, and receipt URL must be non-zero and non-empty")
+    case e.SessionID <= 0 || e.DateTime.IsZero() || e.ReceiptURL == "":
+        return utils.LogError(
+            "session ID, date and time, and receipt URL must be positive and non-zero",
+        )
     case err != nil:
         return  err
     case e.ID < 0 || e.SessionID < 0:
@@ -234,6 +259,13 @@ func (e Expense) Valid() error {
     default:
         return nil
     }
+}
+
+func (e Expense) Valid() error {
+    if e.ID <= 0 {
+        return utils.LogError("expense ID must be positive and non-zero")
+    }
+    return e.PreInsertValid()
 }
 
 func (e Expense) CheckReceipt() error {
@@ -268,7 +300,9 @@ func isImageFile(filePath string) error {
     buffer := make([]byte, 512)
     n, err := receiptImage.Read(buffer)
     if err != nil && err != io.EOF {
-        return utils.LogError("error reading headers of receipt image: %v", err)
+        return utils.LogError(
+            "error reading headers of receipt image: %v", err,
+        )
     }
 
     buffer = buffer[:n] // Adjust buffer size to the actual number of bytes read
@@ -277,6 +311,8 @@ func isImageFile(filePath string) error {
     case "image/jpeg", "image/png", "image/gif", "image/bmp", "image/webp":
         return nil
     default:
-        return utils.LogError("invalid receipt image type %s: %s", filePath, contentType)
+        return utils.LogError(
+            "invalid receipt image type %s: %s",filePath, contentType,
+        )
     }
 }
