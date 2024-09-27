@@ -32,6 +32,9 @@ func(c Client) Valid() error {
     if c.ID == 0 || c.Name == "" {
         return utils.LogError("client ID and name must be non-zero and non-empty")
     }
+    if len([]rune(c.Name)) > 100 {
+        return utils.LogError("client name exceeds maximum length of 100 characters")
+    }
     return nil
 }
 
