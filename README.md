@@ -2,12 +2,12 @@
 **Track and report professional expenses**
 *ExpenseFlow is an app designed to help professionals track and report their expenses. It simplifies the process of managing receipts, categorizing expenses, and generating reports, all from a single platform.*
 
-### Expected Features
-- 🚧 **Session-based expense tracking:** Log expenses against a session (client or mission).
-- 🚧 **Expense details:** Track the reason, value, date, and time of each expense.
-- 🚧 **Receipt capture:** Upload photos of receipts.
-- 🚧 **Reports:** Generate reports in a specific format.
-- 🚧 **Cross-platform support:** Available on Android, iOS, Windows, Mac, Linux and Online.
+### 🚧 Features 🚧
+- **Session-based expense tracking:** Log expenses against a session (client or mission).
+- **Expense details:** Track the reason, value, date, and time of each expense.
+- **Receipt capture:** Upload photos of receipts.
+- **Reports:** Generate reports in a specific format.
+- **Cross-platform support:** Available on Android, iOS, Windows, Mac, Linux and Online.
 
 ### Tech Stack
 - **Backend:** Go (Golang)
