@@ -149,6 +149,9 @@ After creating some test to identify when Add or Sum were creating a float `> ma
 ### Datatype for IDs
 sqlite3 drivers are returning `int64` for ID columns. I decided to stick with `int` datatype in go (32 or 64 depending on the machine running.) It's very unlikely that I'll ever need `int64`, but I added a validation with `Fatal` if it ever occurs.
 
+### Logging
+I will use the tag `[info]` for what's not fatal/error. I'll try to not crowd the logs with useless logic event. But for now any change to the DB is logged. And to avoid any security/privacy breach I'll only log IDs for information.
+
 ## Problems and solutions
 🚧
 ## Design choices
