@@ -170,9 +170,9 @@ I will use the tag `[info]` for what's not fatal/error. I'll try to not crowd th
 - [ ] `Multiple reports in case of multiple currencies.`
 - What are the models/properties I'm missing?
 - [x] `Standard categories`
-- [ ] `Additional expense comment: Observation`
+- [x] `Additional expense comment: Observation`
 - [x] `Taxes by categories`
-- [ ] `Expenses can have Session = NULL`
+- [x] `Expenses can have Session = NULL`
 - [ ] `KM by session`
 - [ ] `opt VILLE > MISSION > opt VILLE`
 - [ ] `Session.Town, Session.ZipCode`
