@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE TABLE IF NOT EXISTS expense_types (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     name            TEXT     NOT NULL UNIQUE,
-    taxe_rate       REAL     NOT NULL,
+    taxe_rate       REAL     NOT NULL, -- TODO new entity for taxes
 
     CONSTRAINT ck_non_empty_name                 CHECK (LENGTH(name) > 0),
     CONSTRAINT ck_normal_size_name_50            CHECK (LENGTH(name) <= 50),
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS expense_types (
 
 CREATE TABLE IF NOT EXISTS expenses (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    session_id      INTEGER  NOT NULL,
+    session_id      INTEGER      NULL, -- NULLABLE FK
     type_id         INTEGER  NOT NULL,
     amount_value    REAL     NOT NULL, -- mapped in Amount.value
     amount_currency TEXT     NOT NULL, -- mapped in Amount.currency
