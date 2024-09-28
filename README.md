@@ -171,7 +171,7 @@ I will use the tag `[info]` for what's not fatal/error. I'll try to not crowd th
 - What are the models/properties I'm missing?
 - [x] `Standard categories`
 - [ ] `Additional expense comment: Observation`
-- [ ] `Taxes by categories`
+- [x] `Taxes by categories`
 - [ ] `Expenses can have Session = NULL`
 - [ ] `KM by session`
 - [ ] `opt VILLE > MISSION > opt VILLE`
