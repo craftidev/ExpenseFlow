@@ -26,7 +26,13 @@ func TestExpenseValid(t *testing.T) {
         t.Errorf("expected valid expense, got error: %v", err)
     }
 
-    var invalidExpenses [11]db.Expense
+    validExpense.Notes = "Valid notes here."
+    err = validExpense.Valid()
+    if err != nil {
+        t.Errorf("expected valid expense, got error: %v", err)
+    }
+
+    var invalidExpenses [12]db.Expense
     for i := 0; i < len(invalidExpenses); i++ {
         invalidExpenses[i] = validExpense
     }
@@ -42,6 +48,7 @@ func TestExpenseValid(t *testing.T) {
     invalidExpenses[8].Amount.Value = 0
     invalidExpenses[9].ID           = -1
     invalidExpenses[10].SessionID   = -1
+    invalidExpenses[11].Notes       = "a" + string(make([]rune, 150))
 
     for i, invalidExpense := range invalidExpenses {
         err = invalidExpense.Valid()
