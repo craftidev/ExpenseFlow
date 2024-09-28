@@ -82,11 +82,20 @@ Once the backend is functional, shift focus to Flutter. Keep it simple at first:
 - A report generator that formats data nicely
 
 ## Reminders and hints
-Testing:
+### Testing:
 ```bash
 go test ./tests
 ```
-Running:
+
+Change test timeout in VS Code:
+```json
+{
+    "go.testTimeout": "5s"
+}
+
+```
+
+### Running:
 ```bash
 go run ./cmd/expenseflow
 ```
