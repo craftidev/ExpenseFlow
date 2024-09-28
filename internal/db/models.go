@@ -216,11 +216,10 @@ func (et ExpenseType) PreInsertValid() error {
     if et.Name == "" {
         return utils.LogError("name must be non-zero")
     }
-    if et.TaxeRate < 0 {
-        return utils.LogError("taxe rate must be positive")
-    }
-    if et.TaxeRate > 60 {
-        return utils.LogError("taxe rate must be less than or equal to 60")
+    if et.TaxeRate < 0 || et.TaxeRate > 60 {
+        return utils.LogError(
+            "taxe rate must be positive and less than or equal to 60",
+        )
     }
     return nil
 }
@@ -243,13 +242,18 @@ type Expense struct {
     Location   string
     DateTime   time.Time
     ReceiptURL string
+    Notes      string
 }
 
 func (e Expense) String() string {
-    return fmt.Sprintf(
+    format := fmt.Sprintf(
         "%v (%d)\nat %v (%v)\nreceipt: %v",
         e.Amount, e.TypeID, e.Location, e.DateTime, e.ReceiptURL,
     )
+    if e.Notes != "" {
+        format += fmt.Sprintf("\nNotes: %v", e.Notes)
+    }
+    return format
 }
 
 func (e Expense) PreInsertValid() error {
@@ -259,6 +263,8 @@ func (e Expense) PreInsertValid() error {
         return utils.LogError(
             "session ID, date and time, and receipt URL must be positive and non-zero",
         )
+    case len([]rune(e.Notes)) >= 150:
+        return utils.LogError("notes must be under 150 characters")
     case err != nil:
         return  err
     case e.ID < 0 || e.SessionID < 0:
