@@ -20,25 +20,34 @@ func TestExpenseValid(t *testing.T) {
         Amount:    db.Amount{Value: 100.20, Currency: "USD"},
         DateTime:  time.Now(),
         ReceiptURL: "/tests/assets/valid_receipt_test.png",
+        Notes: "Valid notes here.",
     }
     err := validExpense.Valid()
     if err != nil {
         t.Errorf("expected valid expense, got error: %v", err)
     }
 
-    validExpense.Notes = "Valid notes here."
+    // Nullable Notes
+    validExpense.Notes = ""
     err = validExpense.Valid()
     if err != nil {
-        t.Errorf("expected valid expense, got error: %v", err)
+        t.Errorf("expected valid expense with zero-valued Notes, got error: %v", err)
     }
 
-    var invalidExpenses [12]db.Expense
+    // Nullable -> zero-value SessionID
+    validExpense.SessionID = 0
+    err = validExpense.Valid()
+    if err != nil {
+        t.Errorf("expected valid expense with zero-valued SessionID, got error: %v", err)
+    }
+
+    var invalidExpenses [11]db.Expense
     for i := 0; i < len(invalidExpenses); i++ {
         invalidExpenses[i] = validExpense
     }
 
     invalidExpenses[0].ID           = 0
-    invalidExpenses[1].SessionID    = 0
+    invalidExpenses[1].Notes       = "a" + string(make([]rune, 150))
     invalidExpenses[2].Amount       = db.Amount{}
     invalidExpenses[3].DateTime     = time.Time{}
     invalidExpenses[4].ReceiptURL   = ""
@@ -48,7 +57,6 @@ func TestExpenseValid(t *testing.T) {
     invalidExpenses[8].Amount.Value = 0
     invalidExpenses[9].ID           = -1
     invalidExpenses[10].SessionID   = -1
-    invalidExpenses[11].Notes       = "a" + string(make([]rune, 150))
 
     for i, invalidExpense := range invalidExpenses {
         err = invalidExpense.Valid()
