@@ -82,6 +82,20 @@ Once the backend is functional, shift focus to Flutter. Keep it simple at first:
 - A report generator that formats data nicely
 
 ## Reminders and hints
+### Install
+Modify path in `/config/config.go`
+
+### Running:
+```bash
+go run ./cmd/expenseflow
+
+### Dev
+Use git hooks
+```bash
+git config core.hooksPath .githooks
+```
+```
+
 ### Testing:
 ```bash
 go test ./tests
@@ -94,14 +108,6 @@ Change go test timeout in VS Code:
 }
 
 ```
-
-### Running:
-```bash
-go run ./cmd/expenseflow
-```
-
-### Install
-Modify path in `/config/config.go`
 
 ## Important decisions
 ### Choice of stack: Go / Flutter / SQLite:
