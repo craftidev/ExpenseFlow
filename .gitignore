@@ -35,3 +35,6 @@ go.work.sum
 
 # logs
 app.log
+
+# personal folder for crap
+/personal
