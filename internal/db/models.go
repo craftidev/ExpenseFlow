@@ -209,7 +209,7 @@ type ExpenseType struct {
 }
 
 func (et ExpenseType) String() string {
-    return fmt.Sprintf(et.Name)
+    return fmt.Sprintf("%v taxed at %v%%", et.Name, et.TaxeRate)
 }
 
 func (et ExpenseType) PreInsertValid() error {
