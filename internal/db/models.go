@@ -49,7 +49,7 @@ func (c Client) Valid() error {
 // Methods: String, PreInsertValid, Valid
 type Session struct {
     ID       int
-    ClientID int // TODO delete
+    ClientID int
     Name     string
     Address  string
     StartAt  time.Time
@@ -205,6 +205,7 @@ func (a AmountList) Sum() (AmountList, error) {
 type ExpenseType struct {
     ID   int
     Name string
+    TaxeRate float64
 }
 
 func (et ExpenseType) String() string {
@@ -213,7 +214,10 @@ func (et ExpenseType) String() string {
 
 func (et ExpenseType) PreInsertValid() error {
     if et.Name == "" {
-        return utils.LogError("ame must be non-zero")
+        return utils.LogError("name must be non-zero")
+    }
+    if et.TaxeRate < 0 {
+        return utils.LogError("taxe rate mustsn't be negative")
     }
     return nil
 }
