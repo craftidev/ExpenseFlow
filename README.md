@@ -165,7 +165,7 @@ I will use the tag `[info]` for what's not fatal/error. I'll try to not crowd th
 🚧
 ## Design choices
 🚧
-## Pending question
+## Questions to users
 - Do I need a currency converter? Does the report show multiple totals depending on currency?
 -> `Multiple reports in case of multiple currencies.`
 - What are the models/properties I'm missing?
