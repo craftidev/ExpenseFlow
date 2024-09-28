@@ -37,9 +37,11 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE TABLE IF NOT EXISTS expense_types (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     name            TEXT     NOT NULL UNIQUE,
+    taxe_rate       REAL     NOT NULL,
 
     CONSTRAINT ck_non_empty_name                 CHECK (LENGTH(name) > 0),
-    CONSTRAINT ck_normal_size_name_50            CHECK (LENGTH(name) <= 50)
+    CONSTRAINT ck_normal_size_name_50            CHECK (LENGTH(name) <= 50),
+    CONSTRAINT ck_positive_taxe_rate             CHECK (taxe_rate >= 0)
 );
 
 CREATE TABLE IF NOT EXISTS expenses (
