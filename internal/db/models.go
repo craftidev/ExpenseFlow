@@ -217,7 +217,10 @@ func (et ExpenseType) PreInsertValid() error {
         return utils.LogError("name must be non-zero")
     }
     if et.TaxeRate < 0 {
-        return utils.LogError("taxe rate mustsn't be negative")
+        return utils.LogError("taxe rate must be positive")
+    }
+    if et.TaxeRate > 60 {
+        return utils.LogError("taxe rate must be less than or equal to 60")
     }
     return nil
 }

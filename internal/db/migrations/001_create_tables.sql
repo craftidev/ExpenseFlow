@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS expense_types (
     CONSTRAINT ck_non_empty_name                 CHECK (LENGTH(name) > 0),
     CONSTRAINT ck_normal_size_name_50            CHECK (LENGTH(name) <= 50),
     CONSTRAINT ck_positive_taxe_rate             CHECK (taxe_rate >= 0)
+    CONSTRAINT ck_normal_size_taxe_rate_60       CHECK (taxe_rate <= 60)
 );
 
 CREATE TABLE IF NOT EXISTS expenses (
