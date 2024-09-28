@@ -49,7 +49,7 @@ func (c Client) Valid() error {
 // Methods: String, PreInsertValid, Valid
 type Session struct {
     ID       int
-    ClientID int
+    ClientID int // TODO delete
     Name     string
     Address  string
     StartAt  time.Time
