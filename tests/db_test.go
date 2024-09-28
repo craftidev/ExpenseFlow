@@ -19,6 +19,7 @@ func TestMain(m *testing.M) {
     os.Exit(exitCode)
 }
 
+// TODO test standard model migration
 func TestInitDB(t *testing.T) {
 	if SingletonDatabaseTest == nil {
 		t.Fatal("Expected the in-memory database to be set up, but it was nil")
