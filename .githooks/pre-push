@@ -1,0 +1,23 @@
+#!/bin/sh
+RED='\033[0;31m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+remote="$1"
+url="$2"
+
+# Extract branch name
+branch=$(git rev-parse --abbrev-ref HEAD)
+
+# Pull the latest changes
+git pull $remote $branch
+
+# Run Go tests
+go test ./tests -timeout 10s
+
+# Check if tests passed
+if [ $? -ne 0 ]; then
+  echo "${RED}Tests failed.${NC} Push aborted."
+  exit 1
+fi
+
+echo "${CYAN}Tests succeeded.${NC} Pushing to $2 -> $remote/$branch"
