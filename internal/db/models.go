@@ -259,10 +259,12 @@ func (e Expense) String() string {
 func (e Expense) PreInsertValid() error {
     err := e.Amount.Valid()
     switch {
-    case e.SessionID <= 0 || e.DateTime.IsZero() || e.ReceiptURL == "":
+    case e.DateTime.IsZero() || e.ReceiptURL == "":
         return utils.LogError(
-            "session ID, date and time, and receipt URL must be positive and non-zero",
+            "date and time, and receipt URL must be positive and non-zero",
         )
+    case e.SessionID < 0:
+        return utils.LogError("session ID must be 0 or positive.")
     case len([]rune(e.Notes)) >= 150:
         return utils.LogError("notes must be under 150 characters")
     case err != nil:
