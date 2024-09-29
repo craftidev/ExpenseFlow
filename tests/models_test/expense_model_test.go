@@ -3,13 +3,13 @@ package models_test
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/craftidev/expenseflow/config"
 	"github.com/craftidev/expenseflow/internal/db"
 )
-
 
 // Test Amount too has it is part of it and combined/mapped in DB
 
@@ -138,10 +138,10 @@ func TestCheckReceipt(t *testing.T) {
 }
 
 func TestCheckReceiptWithProtectedFile(t *testing.T) {
-    filePath := "/tests/assets/receipts/protected_receipt_test.png"
+    filePath := filepath.Join(config.GetAppPath(), "tests", "assets", "receipts", "protected_receipt_test.png")
 
     // Set permissions to 000
-    err := os.Chmod(config.Path + filePath, 0000)
+    err := os.Chmod(filePath, 0000)
     if err != nil {
         t.Fatalf("failed to set file permissions before testing: %v", err)
     }
@@ -156,7 +156,7 @@ func TestCheckReceiptWithProtectedFile(t *testing.T) {
     }
 
     // Restore permissions after the test
-    err = os.Chmod(config.Path +filePath, 0644)
+    err = os.Chmod(filePath, 0644)
     if err != nil {
         t.Fatalf("failed to restore file permissions: %v", err)
     }

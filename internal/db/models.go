@@ -284,9 +284,9 @@ func (e Expense) Valid() error {
 }
 
 func (e Expense) CheckReceipt() error {
-    receiptPath := filepath.Join(config.Path, e.ReceiptURL)
+    receiptPath := filepath.Join(config.GetAppPath(), e.ReceiptURL)
     _, errOs := os.Stat(receiptPath)
-    errIsImageFile := isImageFile(config.Path + e.ReceiptURL)
+    errIsImageFile := isImageFile(receiptPath)
 
     switch {
     case e.ReceiptURL == config.DefaultReceiptURL:
