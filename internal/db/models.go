@@ -14,8 +14,10 @@ import (
 )
 
 
-// List of models: Client, Session, ExpenseType, Expense
+// List of models: Client, Session, CarTrip, ExpenseType, Expense
 // Plus (not its own DB table): Amount, AmountList
+// By order of less strict to more strict for validation:
+// PreinsertValid < Valid < PreReportValid
 
 // Client
 // Methods: String, PreInsertValid, Valid
@@ -46,26 +48,52 @@ func (c Client) Valid() error {
 }
 
 // Session
-// Methods: String, PreInsertValid, Valid
+// Methods: String, PreInsertValid, Valid, PreReportValid
 type Session struct {
     ID       int
     ClientID int
-    Name     string
-    Address  string
-    StartAt  time.Time
-    EndAt    time.Time
+    Location string
+    TripStartLocation string
+    TripEndLocation string
+    StartAtDateTime  time.Time
+    EndAtDateTime    time.Time
 }
 
 func (s Session) String() string {
-    return fmt.Sprintf(s.Name)
+    var format string
+    if s.TripStartLocation != "" {
+        format += s.TripStartLocation + " > "
+    }
+    format += fmt.Sprintf("[%v]", s.Location)
+    if s.TripEndLocation!= "" {
+        format += " > " + s.TripEndLocation
+    }
+    format += "\n[ "
+    if s.StartAtDateTime.IsZero() {
+        format += s.StartAtDateTime.Format(time.DateOnly)
+    }
+    format += " - "
+    if s.EndAtDateTime.IsZero() {
+        format += s.EndAtDateTime.Format(time.DateOnly)
+    }
+    format += " ]"
+
+    return fmt.Sprint(format)
 }
 
 func (s Session) PreInsertValid() error {
-    if s.ClientID == 0 || s.Name == "" || s.Address == "" || s.StartAt.IsZero() || s.EndAt.IsZero() {
-        return utils.LogError("client ID, name, address, start and end times must be positive and non-zero")
+    if s.ClientID == 0 || s.Location == "" {
+        return utils.LogError("client ID and location cannot be empty")
     }
-    if s.StartAt.After(s.EndAt) {
-        return utils.LogError("start time must be before end time (session ID: %d)", s.ID)
+    if s.StartAtDateTime.After(s.EndAtDateTime) {
+        return utils.LogError("start date must be before end date")
+    }
+    if (len([]rune(s.Location)) > 100 ||
+        len([]rune(s.TripStartLocation)) > 100 ||
+        len([]rune(s.TripEndLocation)) > 100) {
+        return utils.LogError(
+            "location, trip start location, and trip end location " +
+            "cannot exceed maximum length of 100 characters")
     }
     return nil
 }
@@ -75,6 +103,43 @@ func (s Session) Valid() error {
         return utils.LogError("session ID must be positive and non-zero")
     }
     return s.PreInsertValid()
+}
+
+func (s Session) PreReportValid() error {
+    if s.StartAtDateTime.IsZero() || s.EndAtDateTime.IsZero() {
+        return utils.LogError("start date and end date cannot be empty")
+    }
+
+    return s.Valid()
+}
+
+
+// CarTrip
+// Methods:
+type CarTrip struct {
+    ID int
+    SessionID int
+    DistanceKM float64
+    DateTime time.Time // TODO in crud: UNIQUE validation
+}
+
+func (ct CarTrip) String() string {
+    var format string
+    if ct.SessionID != 0 {
+        format += fmt.Sprintf("Session ID: %d - ", ct.SessionID)
+    }
+    format += fmt.Sprintf("%v km @ %v", ct.DistanceKM, ct.DateTime.Format(time.DateOnly))
+    return format
+}
+
+func (ct CarTrip) PreInsertValid() error {
+    if ct.DistanceKM == 0 || ct.DateTime.IsZero() {
+        return utils.LogError("distance km and datetime must be non zero")
+    }
+    if ct.DistanceKM < 0 {
+        return utils.LogError("distance km must be positive")
+    }
+    return nil
 }
 
 
