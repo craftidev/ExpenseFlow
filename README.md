@@ -44,6 +44,7 @@
    - [ ] Integration with other tools (e.g., Google Drive for backup)
    - [ ] Customizable filters/presentation for the report
    - [ ] Export in CSV/PDF/...
+   - [ ] DB backup system
 
 ---
 
