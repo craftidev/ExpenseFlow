@@ -112,6 +112,9 @@ Change go test timeout in VS Code:
 
 ## Reminders
 - [ ] Handle overlap of a mission in reports from one week to another
+- [ ] Create INDEX for every FK
+- [ ] Create users(name, distance unit, date_display, week_start, language, standard_model, car_expense_rate_by_km)
+- [ ] Session start/end only need date not datetime
 
 ## Important decisions
 ### Choice of stack: Go / Flutter / SQLite:
@@ -185,4 +188,3 @@ I will use the tag `[info]` for what's not fatal/error. I'll try to not crowd th
 - [x] `Expenses can have Session = NULL`
 - [ ] `KM by session`
 - [ ] `opt VILLE > MISSION > opt VILLE`
-- [ ] `Session.Town, Session.ZipCode`
