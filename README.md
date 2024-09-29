@@ -82,7 +82,7 @@ Once the backend is functional, shift focus to Flutter. Keep it simple at first:
 - A file picker for receipt images
 - A report generator that formats data nicely
 
-## Reminders and hints
+## Tools
 ### Install
 Modify path in `/config/config.go`
 
@@ -105,10 +105,13 @@ go test ./tests
 Change go test timeout in VS Code:
 ```json
 {
-    "go.testTimeout": "5s"
+    "go.testTimeout": "10s"
 }
 
 ```
+
+## Reminders
+- [ ] Handle overlap of a mission in reports from one week to another
 
 ## Important decisions
 ### Choice of stack: Go / Flutter / SQLite:
