@@ -13,7 +13,7 @@ func CreateClient(database *sql.DB, client db.Client) (int, error) {
     if err := client.PreInsertValid(); err != nil {
         return 0, err
     }
-    ok, err := CheckClientNameIsUnique(database, client)
+    ok, err := checkClientNameIsUnique(database, client)
     if err != nil {
         return 0, err
     }
@@ -75,7 +75,7 @@ func UpdateClient(database *sql.DB, client db.Client) error {
     if err := client.Valid(); err != nil {
         return err
     }
-    ok, err := CheckClientNameIsUnique(database, client)
+    ok, err := checkClientNameIsUnique(database, client)
     if err != nil {
         return err
     }
@@ -116,7 +116,7 @@ func DeleteClientByID(database *sql.DB, id int) error {
     return nil
 }
 
-func CheckClientNameIsUnique(database *sql.DB, client db.Client) (bool, error) {
+func checkClientNameIsUnique(database *sql.DB, client db.Client) (bool, error) {
     sqlQuery := "SELECT COUNT(*) FROM clients WHERE name = ? AND id != ?"
 
     stmt, err := database.Prepare(sqlQuery)
