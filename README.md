@@ -45,6 +45,7 @@
    - [ ] Customizable filters/presentation for the report
    - [ ] Export in CSV/PDF/...
    - [ ] DB backup system
+   - [ ] Show a lock design for sessions reported, warning when try to edit after report
 
 ---
 
@@ -115,6 +116,7 @@ Change go test timeout in VS Code:
 - [ ] Create INDEX for every FK
 - [ ] Create users(name, distance unit, date_display, week_start, language, standard_model, car_expense_rate_by_km)
 - [ ] Session start/end only need date not datetime
+- [ ] [front] Intercept the UNIQUE error of adding CarTrip.DateOnly and propose the user to add the new one to the existing one
 
 ## Important decisions
 ### Choice of stack: Go / Flutter / SQLite:
