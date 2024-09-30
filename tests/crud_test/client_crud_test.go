@@ -2,8 +2,8 @@ package crud_test
 
 import (
 	"database/sql"
+	"log"
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/craftidev/expenseflow/internal/db"
@@ -33,8 +33,16 @@ func TestCreateClient(t *testing.T) {
     if err != nil {
         t.Errorf("expected no error, got: %v", err)
     }
-    if id == 0 {
-        t.Error("expected non-zero ID, got 0")
+    if id <= 0 {
+        t.Error("error, expected non-zero and positive ID")
+    }
+
+    additionalClientForLaterTests := db.Client{
+        Name: "Jane Doe",
+    }
+    _, err = crud.CreateClient(DatabaseTest, additionalClientForLaterTests)
+    if err != nil {
+        t.Errorf("expected no error, got: %v", err)
     }
 
     // Test case with invalid client (zero name)
@@ -81,43 +89,28 @@ func TestGetClientByID(t *testing.T) {
 func TestUpdateClient(t *testing.T) {
     // Can't run this test alone because use TestCreateClient valid entry
 
-    // Valid update
-    client := db.Client{
+    validClient := db.Client{
         ID:   1,
         Name: "John Doe Updated",
     }
-    err := crud.UpdateClient(DatabaseTest, client)
+    err := crud.UpdateClient(DatabaseTest, validClient)
     if err!= nil {
         t.Errorf("expected no error, got: %v", err)
     }
 
-    // Invalid update (zero ID)
-    client.ID = 0
-    err = crud.UpdateClient(DatabaseTest, client)
-    if err == nil {
-        t.Error("expected error for invalid client with zero ID")
+    validSecondClient, err := crud.GetClientByID(DatabaseTest, 2)
+    if err != nil {
+        log.Fatalf("expected no error, got: %v", err)
     }
 
-	var invalidClients [4]db.Client
-	for i := 0; i < len(invalidClients); i++ {
-		invalidClients[i] = client
-        invalidClients[i].Name += strconv.Itoa(i)
-	}
-
+    invalidClients := tests.InitializeSliceOfValidAny(4, validClient)
 	invalidClients[0].ID = -1
 	invalidClients[1].ID = 0
 	invalidClients[2].ID = 9999
-	invalidClients[3].Name = "John Doe Updated"
-
-	for i, invalidClient := range invalidClients {
-		err = crud.UpdateClient(DatabaseTest, invalidClient)
-		if err == nil {
-			t.Errorf(
-                "expected error, got valid client on UpdateClient method " +
-                "test number: %d", i,
-            )
-		}
-	}
+	invalidClients[3].Name = validSecondClient.Name
+    tests.ValidateInvalidEntities(t, invalidClients, func(c db.Client) error {
+        return crud.UpdateClient(DatabaseTest, c)
+    })
 }
 
 func TestDeleteClientByID(t *testing.T) {
