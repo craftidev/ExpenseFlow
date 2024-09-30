@@ -17,7 +17,9 @@ import (
 // List of models: Client, Session, CarTrip, ExpenseType, Expense
 // Plus (not its own DB table): Amount, AmountList
 // By order of less strict to more strict for validation:
-// PreinsertValid < Valid < PreReportValid
+// - PreInsertValid (no ID is ok for insert) <
+// - Valid (need ID, zero value for NULLable column is ok) <
+// - PreReportValid (zero value for certain NULLable is not ok)
 
 // Client
 // Methods: String, PreInsertValid, Valid
@@ -115,7 +117,7 @@ func (s Session) PreReportValid() error {
 
 
 // CarTrip
-// Methods:
+// Methods: String, PreInsertValid, Valid
 type CarTrip struct {
     ID int
     SessionID int
@@ -133,135 +135,26 @@ func (ct CarTrip) String() string {
 }
 
 func (ct CarTrip) PreInsertValid() error {
-    if ct.DistanceKM == 0 || ct.DateTime.IsZero() {
-        return utils.LogError("distance km and datetime must be non zero")
-    }
-    if ct.DistanceKM < 0 {
-        return utils.LogError("distance km must be positive")
-    }
-    return nil
-}
-
-
-// Amount (Not in DB)
-// Methods: String, Valid, Add
-type Amount struct {
-    Value    float64
-    Currency string
-}
-
-func (a Amount) String() string {
-    return fmt.Sprintf("{%.2f %s}", a.Value, a.Currency)
-}
-
-func (a Amount) Valid() error {
-    if a.Currency == "" || a.Value == 0 {
-        return utils.LogError("amount value and currency must be non-empty and non-zero")
-    }
-    if a.Value < 0 {
-        return utils.LogError("amount value must be positive")
-    }
-    return nil
-}
-
-func (a *Amount) Add(other Amount) error {
-    errA := a.Valid()
-    errOther := other.Valid()
-
     switch {
-    case errA != nil:
-        return errA
-    case errOther != nil:
-        return errOther
-    case a.Currency != other.Currency:
-        return utils.LogError("currencies don't match: %v and %v", a.Currency, other.Currency)
-    case a.Value + other.Value > config.MaxFloat:
-        return utils.LogError("sum exceeds maximum float64 value")
+    case ct.DistanceKM == 0 || ct.DateTime.IsZero():
+        return utils.LogError("distance km and datetime must be non zero")
+    case ct.DistanceKM < 0:
+        return utils.LogError("distance km must be positive")
+    case ct.DistanceKM > config.MaxFloat:
+        return utils.LogError(
+            "distance km must be less than custom float limit: %v",
+            config.MaxFloat,
+        )
     default:
-        a.Value += other.Value
         return nil
     }
 }
 
-
-// AmountList (Not in DB)
-// Methods: String, Valid, Equal, Sum
-type AmountList []Amount
-
-func (a AmountList) String() string {
-    var result string
-    for _, amount := range a {
-        result += fmt.Sprintf("%s, ", amount.String())
+func (ct CarTrip) Valid() error {
+    if ct.ID <= 0 {
+        return utils.LogError("car trip ID must be positive and non-zero")
     }
-    return result[:len(result) - 2]
-}
-
-func (a AmountList) Valid() error {
-    if len(a) == 0 {
-        return utils.LogError("list of amounts is empty")
-    }
-
-    for _, amount := range a {
-        if err := amount.Valid(); err != nil {
-            return err
-        }
-    }
-    return nil
-}
-
-func (a AmountList) Equal(other AmountList) (bool, error) {
-    if err := a.Valid(); err != nil {
-        return false, err
-    }
-    if err := other.Valid(); err != nil {
-        return false, err
-    }
-    if len(a) != len(other) {
-        return false, nil
-    }
-
-    temp := make(AmountList, len(other))
-    copy(temp, other)
-
-    for _, amountA := range a {
-        found := false
-        for i, v := range temp {
-            if v == amountA {
-                temp = append(temp[:i], temp[i + 1:]...)
-                found = true
-                break
-            }
-        }
-
-        if !found {
-            return false, nil
-        }
-    }
-    return true, nil
-}
-
-func (a AmountList) Sum() (AmountList, error) {
-    if err := a.Valid(); err != nil {
-        return nil, err
-    }
-
-    sumsByCurrency := make(map[string]float64)
-    for _, amount := range a {
-        if  sum := sumsByCurrency[amount.Currency] + amount.Value;
-            sum > config.MaxFloat {
-            return nil, utils.LogError(
-                "sum exceeds maximum float64 value: %f + %f",
-                sumsByCurrency[amount.Currency], amount.Value,
-            )
-        }
-        sumsByCurrency[amount.Currency] += amount.Value
-    }
-
-    result := make([]Amount, 0, len(sumsByCurrency))
-    for currency, sum := range sumsByCurrency {
-        result = append(result, Amount{Value: sum, Currency: currency})
-    }
-    return result, nil
+    return ct.PreInsertValid()
 }
 
 
@@ -269,22 +162,19 @@ func (a AmountList) Sum() (AmountList, error) {
 // Methods: String, PreInsertValid, Valid
 type ExpenseType struct {
     ID   int
-    Name string
-    TaxeRate float64
+    Name string // TODO: check UNIQUE in crud
 }
 
 func (et ExpenseType) String() string {
-    return fmt.Sprintf("%v taxed at %v%%", et.Name, et.TaxeRate)
+    return fmt.Sprint(et.Name)
 }
 
 func (et ExpenseType) PreInsertValid() error {
     if et.Name == "" {
         return utils.LogError("name must be non-zero")
     }
-    if et.TaxeRate < 0 || et.TaxeRate > 60 {
-        return utils.LogError(
-            "taxe rate must be positive and less than or equal to 60",
-        )
+    if len([]rune(et.Name)) > 50 {
+        return utils.LogError("name cannot exceed maximum length of 50 characters")
     }
     return nil
 }
@@ -298,23 +188,25 @@ func (et ExpenseType) Valid() error {
 
 
 // Expense
-// Methods: String, PreInsertValid, CheckReceipt
+// Methods: String, PreInsertValid, Valid, PreReportValid
 type Expense struct {
     ID         int
     SessionID  int
     TypeID     int
-    Amount     Amount       // Mapped data: will be 2 column in DB
-    Location   string
-    DateTime   time.Time
+    Currency   string
     ReceiptURL string
     Notes      string
+    DateTime   time.Time
 }
 
 func (e Expense) String() string {
     format := fmt.Sprintf(
-        "%v (%d)\nat %v (%v)\nreceipt: %v",
-        e.Amount, e.TypeID, e.Location, e.DateTime, e.ReceiptURL,
+        "Type: %v (%v) @ %v",
+        e.TypeID, e.Currency, e.DateTime.Format(time.DateOnly),
     )
+    if e.ReceiptURL != "" {
+        format += fmt.Sprintf("\n%v", e.ReceiptURL)
+    }
     if e.Notes != "" {
         format += fmt.Sprintf("\nNotes: %v", e.Notes)
     }
@@ -322,20 +214,21 @@ func (e Expense) String() string {
 }
 
 func (e Expense) PreInsertValid() error {
-    err := e.Amount.Valid()
     switch {
-    case e.DateTime.IsZero() || e.ReceiptURL == "":
+    case e.TypeID == 0 || e.Currency == "" || e.DateTime.IsZero():
         return utils.LogError(
-            "date and time, and receipt URL must be positive and non-zero",
+            "type id, currency and date time  must be non-zero",
         )
+    case e.TypeID < 0:
+        return utils.LogError("type ID must be positive.")
+    case len([]rune(e.Currency)) > 10:
+        return utils.LogError("currency must be or under 10 characters")
+    case len([]rune(e.ReceiptURL)) > 50:
+        return utils.LogError("receipt URL must be or under 50 characters")
+    case len([]rune(e.Notes)) > 150:
+        return utils.LogError("notes must be or under 150 characters")
     case e.SessionID < 0:
-        return utils.LogError("session ID must be 0 or positive.")
-    case len([]rune(e.Notes)) >= 150:
-        return utils.LogError("notes must be under 150 characters")
-    case err != nil:
-        return  err
-    case e.ID < 0 || e.SessionID < 0:
-        return utils.LogError("expense ID and session ID can't be negative")
+        return utils.LogError("session ID can't be negative")
     default:
         return nil
     }
@@ -348,14 +241,19 @@ func (e Expense) Valid() error {
     return e.PreInsertValid()
 }
 
-func (e Expense) CheckReceipt() error {
+func (e Expense) PreReportValid() error {
+    if err := e.checkReceipt(); err != nil {
+        return err
+    }
+    return e.Valid()
+}
+
+func (e Expense) checkReceipt() error {
     receiptPath := filepath.Join(config.GetAppPath(), e.ReceiptURL)
     _, errOs := os.Stat(receiptPath)
     errIsImageFile := isImageFile(receiptPath)
 
     switch {
-    case e.ReceiptURL == config.DefaultReceiptURL:
-        return utils.LogError("receipt is the default placeholder image")
     case e.ReceiptURL == "" :
         return utils.LogError("receipt URL is empty")
     case errors.Is(errOs, os.ErrNotExist):
@@ -395,4 +293,80 @@ func isImageFile(filePath string) error {
             "invalid receipt image type %s: %s",filePath, contentType,
         )
     }
+}
+
+
+// LineItem
+// Method: String, PreInsertValid, Valid
+type LineItem struct {
+    ID int
+    ExpenseID int
+    TaxeRate float64
+    Total float64
+}
+
+func (li LineItem) String() string {
+    return fmt.Sprintf(
+        "Expense ID: %d - %.2f (taxe rate: %.2f%%)",
+        li.ExpenseID, li.Total, li.TaxeRate*100,
+    )
+}
+
+func (li LineItem) PreInsertValid() error {
+    switch {
+    case li.ExpenseID <= 0 || li.TaxeRate <= 0 || li.Total <= 0:
+        return utils.LogError(
+            "expense ID, taxe rate and total must be non-zero and  positive",
+        )
+    case li.TaxeRate > 60:
+        return utils.LogError("taxe rate must not exceed 60.0")
+    case li.Total > config.MaxFloat:
+        return utils.LogError(
+            "total must not exceed maximum float64 value: %f",
+            config.MaxFloat,
+        )
+    default:
+        return nil
+    }
+}
+
+func (li LineItem) Valid() error {
+    if li.ID <= 0 {
+        return utils.LogError("line item ID must be positive and non-zero")
+    }
+    return li.PreInsertValid()
+}
+
+
+// Iterables
+
+// Method: MapExpensesByCurrency
+type ExpenseList []Expense
+// Method: SumByTaxeRates
+type LineItemList []LineItem
+
+func (eList ExpenseList) MapExpensesByCurrency() (map[string]ExpenseList, error) {
+    result := make(map[string]ExpenseList)
+    for _, expense := range eList {
+        if err := expense.Valid(); err != nil {
+            return nil, err
+        }
+        if _, ok := result[expense.Currency]; !ok {
+            result[expense.Currency] = make(ExpenseList, 0)
+        }
+        result[expense.Currency] = append(result[expense.Currency], expense)
+    }
+    return result, nil
+}
+
+// This method consider Expense.Currency equality handled
+func (liList LineItemList) SumByTaxeRates() (map[float64]float64, error) {
+    result := make(map[float64]float64)
+    for _, lineItem := range liList {
+        if err := lineItem.Valid(); err != nil {
+            return nil, err
+        }
+        result[lineItem.TaxeRate] += lineItem.Total
+    }
+    return result, nil
 }
