@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS car_trips(
 
     FOREIGN KEY (session_id) REFERENCES sessions(id),
 
-    CONSTRAINT ck_normal_size_date_10  CHECK (LENGTH(date_time) == 19),
+    CONSTRAINT ck_normal_size_date_19  CHECK (LENGTH(date_time) == 19),
     CONSTRAINT ck_positive_distance_km CHECK (distance_km       > 0)
 );
 
