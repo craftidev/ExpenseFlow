@@ -222,16 +222,16 @@ func (e Expense) PreInsertValid() error {
 		return utils.LogError(
 			"type id, currency and date time  must be non-zero",
 		)
-	case e.TypeID < 0:
-		return utils.LogError("type ID must be positive.")
+	case e.SessionID < 0:
+		return utils.LogError("session ID can't be negative")
+	case e.TypeID <= 0:
+		return utils.LogError("type ID must be positive and non-zero.")
 	case len([]rune(e.Currency)) > 10:
 		return utils.LogError("currency can't exceeds 10 characters")
 	case len([]rune(e.ReceiptRelPath)) > 50:
 		return utils.LogError("receipt URL can't exceeds 50 characters")
 	case len([]rune(e.Notes)) > 150:
 		return utils.LogError("notes can't exceeds 150 characters")
-	case e.SessionID < 0:
-		return utils.LogError("session ID can't be negative")
 	default:
 		return nil
 	}
