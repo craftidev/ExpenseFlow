@@ -67,7 +67,6 @@ CREATE TABLE IF NOT EXISTS expenses (
 
     CONSTRAINT ck_non_empty_currency         CHECK (LENGTH(currency)    >  0),
     CONSTRAINT ck_normal_size_currency_10    CHECK (LENGTH(currency)    <= 10),
-    CONSTRAINT ck_normal_size_location_100   CHECK (LENGTH(location)    <= 100),
     CONSTRAINT ck_normal_size_receipt_url_50 CHECK (LENGTH(receipt_url) <= 50),
     CONSTRAINT ck_normal_notes_150           CHECK (LENGTH(notes)       <= 150),
     CONSTRAINT ck_normal_date_time           CHECK (LENGTH(date_time)   == 19)
