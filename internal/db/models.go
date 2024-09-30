@@ -13,8 +13,9 @@ import (
 	"github.com/craftidev/expenseflow/internal/utils"
 )
 
-// List of models: Client, Session, CarTrip, ExpenseType, Expense
-// Plus (not its own DB table): Amount, AmountList
+// List of models: Client, Session, CarTrip, ExpenseType, Expense, LineItem
+// Iterables: ExpenseList, LineItemList
+
 // By order of less strict to more strict for validation:
 // - PreInsertValid (no ID is ok for insert) <
 // - Valid (need ID, zero value for NULLable column is ok) <
@@ -83,20 +84,21 @@ func (s Session) String() string {
 }
 
 func (s Session) PreInsertValid() error {
-	if s.ClientID <= 0 || s.Location == "" {
+    switch {
+    case s.ClientID <= 0 || s.Location == "":
 		return utils.LogError("client ID and location cannot be empty or negative")
-	}
-	if !s.EndAtDateTime.IsZero() && s.StartAtDateTime.After(s.EndAtDateTime) {
+    case !s.EndAtDateTime.IsZero() && s.StartAtDateTime.After(s.EndAtDateTime):
 		return utils.LogError("start date must be before end date")
-	}
-	if len([]rune(s.Location)) > 100 ||
-		len([]rune(s.TripStartLocation)) > 100 ||
-		len([]rune(s.TripEndLocation)) > 100 {
+    case    len([]rune(s.Location)) > 100 ||
+            len([]rune(s.TripStartLocation)) > 100 ||
+            len([]rune(s.TripEndLocation)) > 100:
 		return utils.LogError(
 			"location, trip start location, and trip end location " +
-				"cannot exceed maximum length of 100 characters")
-	}
-	return nil
+			"cannot exceed maximum length of 100 characters",
+        )
+    default:
+        return nil
+    }
 }
 
 func (s Session) Valid() error {
@@ -338,6 +340,7 @@ func (li LineItem) Valid() error {
 	}
 	return li.PreInsertValid()
 }
+
 
 // Iterables
 
