@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 )
 
-func GetAppPath() string {
+func getAppPath() string {
     path, err := os.Getwd()
     if err != nil {
         log.Fatalf("[fatal] couldn't find working directory: %v", err)
@@ -15,9 +15,10 @@ func GetAppPath() string {
 }
 
 var (
-    DBPath = filepath.Join(GetAppPath(), "internal", "db", "expenseflow.db")
-    DefaultReceiptURL = filepath.Join(GetAppPath(), "assets", "receipts", "default.jpg") // TODO get rid of it
-    MigrationsDirPath = filepath.Join(GetAppPath(),"internal", "db", "migrations")
+    Path = getAppPath()
+    DBPath = filepath.Join(Path, "internal", "db", "expenseflow.db")
+    ReceiptsDir = filepath.Join(Path, "assets", "receipts")
+    MigrationsDirPath = filepath.Join(Path,"internal", "db", "migrations")
 )
 const (
     MaxFloat = 1_000_000_000.0
