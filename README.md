@@ -117,6 +117,7 @@ Change go test timeout in VS Code:
 - [ ] Create users(name, distance unit, date_display, week_start, language, standard_model, car_expense_rate_by_km)
 - [ ] Session start/end only need date not datetime
 - [ ] [front] Intercept the UNIQUE error of adding CarTrip.DateOnly and propose the user to add the new one to the existing one
+- [ ] [front] Check that Flutter handle the display of img with wrong extension but correct file header (if not, just add extension validation in back-end on top of header validation)
 
 ## Important decisions
 ### Choice of stack: Go / Flutter / SQLite:
