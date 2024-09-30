@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS sessions (
 
     CONSTRAINT ck_non_empty_fields                 CHECK (
         LENGTH(location)    > 0 AND
-        trip_start_location == NULL OR LENGTH(trip_start_location) > 0 AND
-        trip_end_location   == NULL OR LENGTH(trip_end_location)   > 0
+        (trip_start_location == NULL OR LENGTH(trip_start_location) > 0) AND
+        (trip_end_location   == NULL OR LENGTH(trip_end_location)   > 0)
     ),
     CONSTRAINT ck_normal_size_name_locations_100   CHECK (
         LENGTH(location)            <= 100 AND
@@ -28,8 +28,8 @@ CREATE TABLE IF NOT EXISTS sessions (
         LENGTH(trip_end_location)   <= 100
     ),
     CONSTRAINT ck_normal_size_start_end_at_date_19 CHECK (
-        start_at_date == NULL OR LENGTH(start_at_date) == 19 AND
-        end_at_date   == NULL OR LENGTH(end_at_date)   == 19
+        (start_at_date == NULL OR LENGTH(start_at_date) == 19) AND
+        (end_at_date   == NULL OR LENGTH(end_at_date)   == 19)
     )
 );
 
@@ -65,11 +65,15 @@ CREATE TABLE IF NOT EXISTS expenses (
     FOREIGN KEY (session_id) REFERENCES sessions(id),
     FOREIGN KEY (type_id)    REFERENCES expense_types(id),
 
-    CONSTRAINT ck_non_empty_currency         CHECK (LENGTH(currency)    >  0),
-    CONSTRAINT ck_normal_size_currency_10    CHECK (LENGTH(currency)    <= 10),
-    CONSTRAINT ck_normal_size_receipt_url_50 CHECK (LENGTH(receipt_url) <= 50),
-    CONSTRAINT ck_normal_notes_150           CHECK (LENGTH(notes)       <= 150),
-    CONSTRAINT ck_normal_date_time           CHECK (LENGTH(date_time)   == 19)
+    CONSTRAINT ck_non_empty_currency          CHECK (LENGTH(currency)    >  0),
+    CONSTRAINT ck_normal_size_currency_10     CHECK (LENGTH(currency)    <= 10),
+    CONSTRAINT ck_normal_size_receipt_url_50  CHECK (LENGTH(receipt_url) <= 50),
+    CONSTRAINT ck_normal_notes_150            CHECK (LENGTH(notes)       <= 150),
+    CONSTRAINT ck_normal_date_time            CHECK (LENGTH(date_time)   == 19)
+    CONSTRAINT ck_non_empty_receipt_url_notes CHECK (
+        (receipt_url == NULL OR LENGTH(receipt_url) > 0) AND
+        (notes       == NULL OR LENGTH(notes) > 0)
+    )
 );
 
 CREATE TABLE IF NOT EXISTS line_items (
