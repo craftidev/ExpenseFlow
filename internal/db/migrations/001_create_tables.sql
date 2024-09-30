@@ -12,8 +12,8 @@ CREATE TABLE IF NOT EXISTS sessions (
     location            TEXT     NOT NULL,
     trip_start_location TEXT         NULL,
     trip_end_location   TEXT         NULL,
-    start_at_date       TEXT         NULL,
-    end_at_date         TEXT         NULL,
+    start_at_date_time  TEXT         NULL,
+    end_at_date_time    TEXT         NULL,
 
     FOREIGN KEY (client_id)  REFERENCES clients(id),
 
@@ -28,8 +28,8 @@ CREATE TABLE IF NOT EXISTS sessions (
         LENGTH(trip_end_location)   <= 100
     ),
     CONSTRAINT ck_normal_size_start_end_at_date_19 CHECK (
-        (start_at_date == NULL OR LENGTH(start_at_date) == 19) AND
-        (end_at_date   == NULL OR LENGTH(end_at_date)   == 19)
+        (start_at_date_time == NULL OR LENGTH(start_at_date_time) == 19) AND
+        (end_at_date_time   == NULL OR LENGTH(end_at_date_time)   == 19)
     )
 );
 
@@ -37,12 +37,12 @@ CREATE TABLE IF NOT EXISTS car_trips(
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     session_id  INTEGER     NULL,
     distance_km REAL    NOT NULL,
-    date_time   TEXT    NOT NULL UNIQUE,
+    date        TEXT    NOT NULL UNIQUE,
 
     FOREIGN KEY (session_id) REFERENCES sessions(id),
 
-    CONSTRAINT ck_normal_size_date_19  CHECK (LENGTH(date_time) == 19),
-    CONSTRAINT ck_positive_distance_km CHECK (distance_km       > 0)
+    CONSTRAINT ck_normal_size_date_10  CHECK (LENGTH(date) == 10),
+    CONSTRAINT ck_positive_distance_km CHECK (distance_km  > 0)
 );
 
 CREATE TABLE IF NOT EXISTS expense_types (
