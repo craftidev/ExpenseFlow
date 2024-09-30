@@ -86,5 +86,5 @@ CREATE TABLE IF NOT EXISTS line_items (
 
     CONSTRAINT ck_positive_total           CHECK (taxe_rate > 0),
     CONSTRAINT ck_positive_taxe_rate       CHECK (taxe_rate >= 0),
-    CONSTRAINT ck_normal_size_taxe_rate_60 CHECK (taxe_rate <= 60)
+    CONSTRAINT ck_limit_size_taxe_rate_60 CHECK (taxe_rate <= 60)
 );
