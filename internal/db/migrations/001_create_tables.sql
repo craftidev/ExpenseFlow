@@ -54,25 +54,25 @@ CREATE TABLE IF NOT EXISTS expense_types (
 );
 
 CREATE TABLE IF NOT EXISTS expenses (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    session_id  INTEGER     NULL,
-    type_id     INTEGER NOT NULL,
-    currency    TEXT    NOT NULL,
-    receipt_url TEXT        NULL,
-    notes       TEXT        NULL,
-    date_time   TEXT    NOT NULL,
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id       INTEGER     NULL,
+    type_id          INTEGER NOT NULL,
+    currency         TEXT    NOT NULL,
+    receipt_rel_path TEXT        NULL,
+    notes            TEXT        NULL,
+    date_time        TEXT    NOT NULL,
 
     FOREIGN KEY (session_id) REFERENCES sessions(id),
     FOREIGN KEY (type_id)    REFERENCES expense_types(id),
 
-    CONSTRAINT ck_non_empty_currency          CHECK (LENGTH(currency)    >  0),
-    CONSTRAINT ck_normal_size_currency_10     CHECK (LENGTH(currency)    <= 10),
-    CONSTRAINT ck_normal_size_receipt_url_50  CHECK (LENGTH(receipt_url) <= 50),
-    CONSTRAINT ck_normal_notes_150            CHECK (LENGTH(notes)       <= 150),
-    CONSTRAINT ck_normal_date_time            CHECK (LENGTH(date_time)   == 19)
-    CONSTRAINT ck_non_empty_receipt_url_notes CHECK (
-        (receipt_url == NULL OR LENGTH(receipt_url) > 0) AND
-        (notes       == NULL OR LENGTH(notes) > 0)
+    CONSTRAINT ck_non_empty_currency                CHECK (LENGTH(currency)    >  0),
+    CONSTRAINT ck_normal_size_currency_10           CHECK (LENGTH(currency)    <= 10),
+    CONSTRAINT ck_normal_size_receipt_rel_path_50   CHECK (LENGTH(receipt_rel_path) <= 50),
+    CONSTRAINT ck_normal_notes_150                  CHECK (LENGTH(notes)       <= 150),
+    CONSTRAINT ck_normal_date_time                  CHECK (LENGTH(date_time)   == 19),
+    CONSTRAINT ck_non_empty_receipt_rel_path_notes  CHECK (
+        (receipt_rel_path == NULL OR LENGTH(receipt_rel_path) > 0) AND
+        (notes            == NULL OR LENGTH(notes) > 0)
     )
 );
 
@@ -86,5 +86,5 @@ CREATE TABLE IF NOT EXISTS line_items (
 
     CONSTRAINT ck_positive_total           CHECK (taxe_rate > 0),
     CONSTRAINT ck_positive_taxe_rate       CHECK (taxe_rate >= 0),
-    CONSTRAINT ck_limit_size_taxe_rate_60 CHECK (taxe_rate <= 60)
+    CONSTRAINT ck_limit_size_taxe_rate_60  CHECK (taxe_rate <= 60)
 );
