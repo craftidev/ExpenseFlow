@@ -90,16 +90,30 @@ func UpdateClient(database *sql.DB, client db.Client) error {
     }
     defer stmt.Close()
 
-    _, err = stmt.Exec(client.Name, client.ID)
+    res, err := stmt.Exec(client.Name, client.ID)
     if err != nil {
         return utils.LogError("unable to update client: %v, error: %v", client, err)
     }
+
+    rowsAffected, err := res.RowsAffected()
+    if err != nil {
+        return utils.LogError("failed to check affected rows: %v", err)
+    }
+
+    if rowsAffected == 0 {
+        return utils.LogError("no client found with ID: %d", client.ID)
+    }
+
     log.Printf("[info] Client (ID: %v) updated", client.ID)
 
     return nil
 }
 
 func DeleteClientByID(database *sql.DB, id int) error {
+    if id <= 0 {
+        return utils.LogError("client ID must be positive and non-zero")
+    }
+
     sqlQuery := "DELETE FROM clients WHERE id = ?"
     stmt, err := database.Prepare(sqlQuery)
     if err != nil {
@@ -107,10 +121,19 @@ func DeleteClientByID(database *sql.DB, id int) error {
     }
     defer stmt.Close()
 
-    _, err = stmt.Exec(id)
+    res, err := stmt.Exec(id)
     if err != nil {
         return utils.LogError("unable to delete client with ID: %v, error: %v", id, err)
     }
+
+    rowsAffected, err := res.RowsAffected()
+    if err!= nil {
+        return utils.LogError("failed to check affected rows: %v", err)
+    }
+    if rowsAffected == 0 {
+        return utils.LogError("no client found with ID: %d", id)
+    }
+
     log.Printf("[info] Client (ID: %v) deleted", id)
 
     return nil
