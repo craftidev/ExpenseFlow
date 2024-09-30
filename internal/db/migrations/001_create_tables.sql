@@ -17,17 +17,17 @@ CREATE TABLE IF NOT EXISTS sessions (
 
     FOREIGN KEY (client_id)  REFERENCES clients(id),
 
-    CONSTRAINT ck_non_empty_fields                         CHECK (
-        LENGTH(location)            > 0 AND
-        LENGTH(trip_start_location) > 0 AND
-        LENGTH(trip_end_location)   > 0 AND
+    CONSTRAINT ck_non_empty_fields                 CHECK (
+        LENGTH(location)    > 0 AND
+        trip_start_location == NULL OR LENGTH(trip_start_location) > 0 AND
+        trip_end_location   == NULL OR LENGTH(trip_end_location)   > 0
     ),
-    CONSTRAINT ck_normal_size_name_locations_100           CHECK (
+    CONSTRAINT ck_normal_size_name_locations_100   CHECK (
         LENGTH(location)            <= 100 AND
         LENGTH(trip_start_location) <= 100 AND
         LENGTH(trip_end_location)   <= 100
     ),
-    CONSTRAINT ck_normal_size_start_at_date_end_at_date_19 CHECK (
+    CONSTRAINT ck_normal_size_start_end_at_date_19 CHECK (
         start_at_date == NULL OR LENGTH(start_at_date) == 19 AND
         end_at_date   == NULL OR LENGTH(end_at_date)   == 19
     )
