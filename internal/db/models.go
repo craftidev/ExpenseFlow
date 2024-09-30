@@ -316,10 +316,12 @@ func (li LineItem) PreInsertValid() error {
     switch {
     case li.ExpenseID <= 0 || li.TaxeRate < 0 || li.Total <= 0:
         return utils.LogError(
-            "expense ID, taxe rate and total must be non-zero and  positive",
+            "expense ID and total must be non-zero and  positive",
         )
-    case li.TaxeRate > 60:
-        return utils.LogError("taxe rate must not exceed 60.0")
+    case li.TaxeRate < 0 || li.TaxeRate > 60:
+        return utils.LogError(
+            "taxe rate must be positive and not exceed 60",
+        )
     case li.Total > config.MaxFloat:
         return utils.LogError(
             "total must not exceed maximum float64 value: %f",
