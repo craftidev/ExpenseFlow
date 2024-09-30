@@ -314,7 +314,7 @@ func (li LineItem) String() string {
 
 func (li LineItem) PreInsertValid() error {
     switch {
-    case li.ExpenseID <= 0 || li.TaxeRate <= 0 || li.Total <= 0:
+    case li.ExpenseID <= 0 || li.TaxeRate < 0 || li.Total <= 0:
         return utils.LogError(
             "expense ID, taxe rate and total must be non-zero and  positive",
         )
