@@ -52,7 +52,7 @@ func TestExpensePreInsertValid(t *testing.T) {
 		t.Errorf("expected valid expense with zero-valued Notes, got error: %v", err)
 	}
 
-    invalidExpenses := tests.InitializeSliceOfValidAny(8, validExpense)
+	invalidExpenses := tests.InitializeSliceOfValidAny(8, validExpense)
 	invalidExpenses[0].SessionID = -1
 	invalidExpenses[1].TypeID = 0
 	invalidExpenses[2].TypeID = -1
@@ -61,9 +61,9 @@ func TestExpensePreInsertValid(t *testing.T) {
 	invalidExpenses[5].ReceiptRelPath = "a" + string(make([]rune, 50))
 	invalidExpenses[6].Notes = "a" + string(make([]rune, 150))
 	invalidExpenses[7].DateTime = time.Time{}
-    tests.ValidateInvalidEntities(t, invalidExpenses, func(e db.Expense) error {
-        return e.PreInsertValid()
-    })
+	tests.ValidateEntities(t, invalidExpenses, true, func(e db.Expense) error {
+		return e.PreInsertValid()
+	})
 }
 
 // Don't re-test what's already tested in PreInsertValid
@@ -74,7 +74,7 @@ func TestValid(t *testing.T) {
 	invalidExpenses := tests.InitializeSliceOfValidAny(2, validExpense)
 	invalidExpenses[0].ID = -1
 	invalidExpenses[1].ID = 0
-	tests.ValidateInvalidEntities(t, invalidExpenses, func(e db.Expense) error {
+	tests.ValidateEntities(t, invalidExpenses, true, func(e db.Expense) error {
 		return e.Valid()
 	})
 }
@@ -84,22 +84,22 @@ func TestPreReportValid(t *testing.T) {
 	// Valid Expense
 	validExpense := getValidExpense()
 
-    invalidExpenses := tests.InitializeSliceOfValidAny(4, validExpense)
+	invalidExpenses := tests.InitializeSliceOfValidAny(4, validExpense)
 	invalidExpenses[0].ReceiptRelPath = "non_exitent_file.png"
 	invalidExpenses[1].ReceiptRelPath = "invalid_receipt_test.txt"
 	invalidExpenses[2].ReceiptRelPath = "corrupted_receipt_test.png"
 	invalidExpenses[3].ReceiptRelPath = "protected_receipt_test.png"
 
 	// Set permissions to 000 to create a protected file
-    protectedFilePath := filepath.Join(config.ReceiptsDirTest, invalidExpenses[3].ReceiptRelPath)
+	protectedFilePath := filepath.Join(config.ReceiptsDirTest, invalidExpenses[3].ReceiptRelPath)
 	err := os.Chmod(protectedFilePath, 0000)
 	if err != nil {
 		t.Fatalf("failed to set file permissions before testing: %v", err)
 	}
 
-    tests.ValidateInvalidEntities(t, invalidExpenses, func(e db.Expense) error {
-        return e.PreReportValid()
-    })
+	tests.ValidateEntities(t, invalidExpenses, true, func(e db.Expense) error {
+		return e.PreReportValid()
+	})
 
 	// Restore permissions after the test
 	err = os.Chmod(protectedFilePath, 0644)
