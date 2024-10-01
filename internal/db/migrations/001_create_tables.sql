@@ -8,12 +8,12 @@ CREATE TABLE IF NOT EXISTS clients (
 
 CREATE TABLE IF NOT EXISTS sessions (
     id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-    client_id           INTEGER  NOT NULL,
-    location            TEXT     NOT NULL,
-    trip_start_location TEXT         NULL,
-    trip_end_location   TEXT         NULL,
-    start_at_date_time  TEXT         NULL,
-    end_at_date_time    TEXT         NULL,
+    client_id           INTEGER NOT NULL,
+    location            TEXT    NOT NULL,
+    trip_start_location TEXT        NULL,
+    trip_end_location   TEXT        NULL,
+    start_at_date_time  TEXT        NULL,
+    end_at_date_time    TEXT        NULL,
 
     FOREIGN KEY (client_id)  REFERENCES clients(id),
 
@@ -34,10 +34,10 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 
 CREATE TABLE IF NOT EXISTS car_trips(
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    session_id  INTEGER     NULL,
-    distance_km REAL    NOT NULL,
-    date        TEXT    NOT NULL UNIQUE,
+    id          INTEGER   PRIMARY KEY AUTOINCREMENT,
+    session_id  INTEGER       NULL,
+    distance_km REAL      NOT NULL,
+    date_only   TEXT NOT NULL UNIQUE,
 
     FOREIGN KEY (session_id) REFERENCES sessions(id),
 
