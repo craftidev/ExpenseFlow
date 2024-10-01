@@ -64,21 +64,21 @@ func ValidateEntities[T any](
         switch {
         case shouldReturnError && err == nil:
 			t.Errorf(
-				"expected error, got valid entity on test number: %d @ %v:%v",
+				"expected error, got valid entity on test number: %d\n@ %v:%v",
 				i, file, line,
 			)
         case shouldReturnError && err != nil:
             continue
         case !shouldReturnError && err != nil:
 			t.Errorf(
-                "did not expect error, got error: %v on test number: %d @ %v:%v",
-                err, i, file, line,
+                "did not expect error on test number: %d\ngot error: %v\n@ %v:%v",
+                i, err, file, line,
             )
         case !shouldReturnError && err == nil:
             continue
         default:
             log.Fatalf(
-                "error on ValidateEntities function on test number: %d. Caller: %v:%v",
+                "error on ValidateEntities function on test number: %d.\nCaller: %v:%v",
                 i, file, line,
             )
         }
