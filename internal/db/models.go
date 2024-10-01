@@ -136,11 +136,16 @@ func (ct CarTrip) String() string {
 
 func (ct CarTrip) PreInsertValid() error {
 	dateTimeFormat, err := time.Parse(time.DateOnly, ct.DateOnly)
-	if err != nil {
-		return utils.LogError("invalid date format, expected yyyy-mm-dd: %v", err)
+	if err != nil || len([]rune(ct.DateOnly)) != 10 {
+		return utils.LogError(
+            "invalid date format, expected yyyy-mm-dd, got: %v. Error: %v",
+            err, ct.DateOnly,
+        )
 	}
 
 	switch {
+    case ct.SessionID < 0:
+        return utils.LogError("session ID must be non-negative")
 	case ct.DistanceKM == 0 || dateTimeFormat.IsZero():
 		return utils.LogError("distance km and datetime must be non zero")
 	case ct.DistanceKM < 0:
@@ -375,3 +380,35 @@ func (liList LineItemList) SumByTaxeRates() (map[float64]float64, error) {
 	}
 	return result, nil
 }
+
+// TODO Equal func for my maps
+// func (a AmountList) Equal(other AmountList) (bool, error) {
+//     if err := a.Valid(); err != nil {
+//         return false, err
+//     }
+//     if err := other.Valid(); err != nil {
+//         return false, err
+//     }
+//     if len(a) != len(other) {
+//         return false, nil
+//     }
+
+//     temp := make(AmountList, len(other))
+//     copy(temp, other)
+
+//     for _, amountA := range a {
+//         found := false
+//         for i, v := range temp {
+//             if v == amountA {
+//                 temp = append(temp[:i], temp[i + 1:]...)
+//                 found = true
+//                 break
+//             }
+//         }
+
+//         if !found {
+//             return false, nil
+//         }
+//     }
+//     return true, nil
+// }
