@@ -37,12 +37,12 @@ CREATE TABLE IF NOT EXISTS car_trips(
     id          INTEGER   PRIMARY KEY AUTOINCREMENT,
     session_id  INTEGER       NULL,
     distance_km REAL      NOT NULL,
-    date_only   TEXT NOT NULL UNIQUE,
+    date_only   TEXT      NOT NULL UNIQUE,
 
     FOREIGN KEY (session_id) REFERENCES sessions(id),
 
-    CONSTRAINT ck_normal_size_date_10  CHECK (LENGTH(date) == 10),
-    CONSTRAINT ck_positive_distance_km CHECK (distance_km  > 0)
+    CONSTRAINT ck_normal_size_date_only_10  CHECK (LENGTH(date_only) == 10),
+    CONSTRAINT ck_positive_distance_km      CHECK (distance_km  > 0)
 );
 
 CREATE TABLE IF NOT EXISTS expense_types (
