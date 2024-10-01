@@ -17,7 +17,7 @@
 
 ### Roadmap
 1. **Backend Development (Go)**
-   - [ ] Define data models (expenses, sessions, reasons, etc.)
+   - [x] Define data models (expenses, sessions, reasons, etc.)
    - [ ] Set up API routes for expense tracking:
      - [ ] POST `/expenses`: Add a new expense
      - [ ] GET `/expenses`: Get a list of all expenses
