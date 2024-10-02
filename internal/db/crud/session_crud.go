@@ -59,7 +59,7 @@ func CreateSession(database *sql.DB, session db.Session) (int64, error) {
 }
 
 func GetSessionByID(database *sql.DB, id int64) (*db.Session, error) {
-    sqlQuery := `SELECT
+    sqlQuery := "SELECT " + `
                     id,
                     client_id,
                     location,

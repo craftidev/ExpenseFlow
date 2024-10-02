@@ -60,7 +60,12 @@ func CreateCarTrip(database *sql.DB, carTrip db.CarTrip) (int64, error) {
 }
 
 func GetCarTripByID(database *sql.DB, id int64) (*db.CarTrip, error) {
-	sqlQuery := "SELECT id, name FROM car_trips WHERE id = ?"
+	sqlQuery := "SELECT " + `
+                    id,
+                    session_id,
+                    distance_km,
+                    date_only` +
+                " FROM car_trips WHERE id = ?"
 	stmt, err := database.Prepare(sqlQuery)
 	if err != nil {
 		return nil, utils.LogError(

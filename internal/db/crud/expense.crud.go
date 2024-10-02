@@ -57,7 +57,15 @@ func CreateExpense(database *sql.DB, expense db.Expense) (int64, error) {
 }
 
 func GetExpenseByID(database *sql.DB, id int64) (*db.Expense, error) {
-	sqlQuery := "SELECT id, name FROM expenses WHERE id = ?"
+	sqlQuery := "SELECT " + `
+                    id,
+                    session_id,
+                    type_id,
+                    currency,
+                    receipt_rel_path,
+                    notes,
+                    date_time` +
+                " FROM expenses WHERE id = ?"
 	stmt, err := database.Prepare(sqlQuery)
 	if err != nil {
 		return nil, utils.LogError(
