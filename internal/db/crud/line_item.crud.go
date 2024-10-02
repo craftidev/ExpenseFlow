@@ -51,12 +51,12 @@ func CreateLineItem(database *sql.DB, lineItem db.LineItem) (int64, error) {
 }
 
 func GetLineItemByID(database *sql.DB, id int64) (*db.LineItem, error) {
-	sqlQuery := "SELECT " + `
+	sqlQuery := `SELECT
                     id,
                     expense_id,
                     taxe_rate,
-                    total` +
-                " FROM line_items WHERE id = ?"
+                    total
+                FROM line_items WHERE id = ?`
 	stmt, err := database.Prepare(sqlQuery)
 	if err != nil {
 		return nil, utils.LogError(
@@ -90,11 +90,11 @@ func UpdateLineItem(database *sql.DB, lineItem db.LineItem) error {
 		return err
 	}
 
-	sqlQuery := "UPDATE line_items SET " + `
+	sqlQuery := `UPDATE line_items SET
                     expense_id = ?,
                     taxe_rate = ?,
-                    total = ?` +
-                " WHERE id = ?"
+                    total = ?
+                WHERE id = ?`
 	stmt, err := database.Prepare(sqlQuery)
 	if err != nil {
 		return utils.LogError("rejected querry: %v, error: %v", sqlQuery, err)

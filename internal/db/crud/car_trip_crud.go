@@ -60,12 +60,12 @@ func CreateCarTrip(database *sql.DB, carTrip db.CarTrip) (int64, error) {
 }
 
 func GetCarTripByID(database *sql.DB, id int64) (*db.CarTrip, error) {
-	sqlQuery := "SELECT " + `
+	sqlQuery := `SELECT
                     id,
                     session_id,
                     distance_km,
-                    date_only` +
-                " FROM car_trips WHERE id = ?"
+                    date_only
+                FROM car_trips WHERE id = ?`
 	stmt, err := database.Prepare(sqlQuery)
 	if err != nil {
 		return nil, utils.LogError(
@@ -108,11 +108,11 @@ func UpdateCarTrip(database *sql.DB, carTrip db.CarTrip) error {
         )
 	}
 
-	sqlQuery := "UPDATE car_trips SET " + `
+	sqlQuery := `UPDATE car_trips SET
                     session_id = ?,
                     distance_km = ?,
-                    date_only = ?` +
-                " WHERE id = ?"
+                    date_only = ?
+                WHERE id = ?`
 	stmt, err := database.Prepare(sqlQuery)
 	if err != nil {
 		return utils.LogError("rejected querry: %v, error: %v", sqlQuery, err)
