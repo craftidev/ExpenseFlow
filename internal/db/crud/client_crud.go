@@ -114,11 +114,18 @@ func UpdateClient(database *sql.DB, client db.Client) error {
 	return nil
 }
 
-// TODO restrict ON DELETE for Session using ClientID as FK
 func DeleteClientByID(database *sql.DB, id int64) error {
 	if id <= 0 {
 		return utils.LogError("client ID must be positive and non-zero")
 	}
+
+    ok, err := isNeverReferencedAsAnFK(database, id);
+    if err != nil {
+        return err
+    }
+    if !ok {
+        return utils.LogError("client still referenced in other tables")
+    }
 
 	sqlQuery := "DELETE FROM clients WHERE id = ?"
 	stmt, err := database.Prepare(sqlQuery)
@@ -154,10 +161,28 @@ func checkClientNameIsUnique(database *sql.DB, client db.Client) (bool, error) {
 	defer stmt.Close()
 
 	var count int
-	err = stmt.QueryRow(client.Name, client.ID).Scan(&count) // AutoIncrementation in sqlite make sure 0 never exist
+	err = stmt.QueryRow(client.Name, client.ID).Scan(&count)
 	if err != nil {
 		return false, utils.LogError("failed to count clients with name: %v, error: %v", client.Name, err)
 	}
 
 	return count == 0, nil
+}
+
+func isNeverReferencedAsAnFK(database *sql.DB, id int64) (bool, error) {
+    sqlQuery := "SELECT COUNT(*) FROM sessions WHERE client_id = ?"
+
+    stmt, err := database.Prepare(sqlQuery)
+    if err != nil {
+		return false, utils.LogError("rejected querry: %v, error: %v", sqlQuery, err)
+	}
+    defer stmt.Close()
+
+    var count int
+    err = stmt.QueryRow(id).Scan(&count)
+    if err!= nil {
+        return false, utils.LogError("failed to count sessions with client ID: %v, error: %v", id, err)
+    }
+
+    return count == 0, nil
 }
