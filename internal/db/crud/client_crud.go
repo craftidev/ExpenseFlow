@@ -123,7 +123,9 @@ func DeleteClientByID(database *sql.DB, id int64) error {
 		return err
 	}
 	if !ok {
-		return utils.LogError("client still referenced in other tables")
+		return utils.LogError(
+            "client (ID: %v) is still referenced by sessions", id,
+        )
 	}
 
 	sqlQuery := "DELETE FROM clients WHERE id = ?"
@@ -173,14 +175,19 @@ func clientIsNeverReferencedAsAnFK(database *sql.DB, id int64) (bool, error) {
 
 	stmt, err := database.Prepare(sqlQuery)
 	if err != nil {
-		return false, utils.LogError("rejected querry: %v, error: %v", sqlQuery, err)
+		return false, utils.LogError(
+            "rejected querry: %v, error: %v", sqlQuery, err,
+        )
 	}
 	defer stmt.Close()
 
 	var count int
 	err = stmt.QueryRow(id).Scan(&count)
 	if err != nil {
-		return false, utils.LogError("failed to count sessions with client ID: %v, error: %v", id, err)
+		return false, utils.LogError(
+            "failed to count sessions with client ID: %v, error: %v",
+            id, err,
+        )
 	}
 
 	return count == 0, nil
