@@ -41,13 +41,13 @@ func CreateClient(database *sql.DB, client db.Client) (int64, error) {
 
 	id, err := res.LastInsertId()
 	if err != nil {
-		log.Println("[error] New client created with unknown ID") // The error did not prevent the INSERT
+		log.Println("[error] new client created with unknown ID") // The error did not prevent the INSERT
 		return 0, utils.LogError(
             "failed to get last inserted ID: %v, error: %v",
             client, err,
         )
 	}
-	log.Printf("[info] New client (ID: %v) created", id)
+	log.Printf("[info] new client (ID: %v) created", id)
 
 	return id, nil
 }
@@ -110,11 +110,11 @@ func UpdateClient(database *sql.DB, client db.Client) error {
 		return utils.LogError("no client found with ID: %d", client.ID)
 	}
 
-	log.Printf("[info] Client (ID: %v) updated", client.ID)
-
+	log.Printf("[info] client (ID: %v) updated", client.ID)
 	return nil
 }
 
+// TODO restrict ON DELETE for Session using ClientID as FK
 func DeleteClientByID(database *sql.DB, id int64) error {
 	if id <= 0 {
 		return utils.LogError("client ID must be positive and non-zero")
@@ -140,8 +140,7 @@ func DeleteClientByID(database *sql.DB, id int64) error {
 		return utils.LogError("no client found with ID: %d", id)
 	}
 
-	log.Printf("[info] Client (ID: %v) deleted", id)
-
+	log.Printf("[info] client (ID: %v) deleted", id)
 	return nil
 }
 
