@@ -51,7 +51,7 @@ func CreateExpenseType(database *sql.DB, expenseType db.ExpenseType) (int64, err
 	return id, nil
 }
 
-func GetExpenseByID(database *sql.DB, id int64) (*db.ExpenseType, error) {
+func GetExpenseTypeByID(database *sql.DB, id int64) (*db.ExpenseType, error) {
 	sqlQuery := "SELECT id, name FROM expense_types WHERE id = ?"
 	stmt, err := database.Prepare(sqlQuery)
 	if err != nil {
