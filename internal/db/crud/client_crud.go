@@ -118,7 +118,7 @@ func DeleteClientByID(database *sql.DB, id int64) error {
 		return utils.LogError("client ID must be positive and non-zero")
 	}
 
-	ok, err := isNeverReferencedAsAnFK(database, id)
+	ok, err := clientIsNeverReferencedAsAnFK(database, id)
 	if err != nil {
 		return err
 	}
@@ -168,7 +168,7 @@ func checkClientNameIsUnique(database *sql.DB, client db.Client) (bool, error) {
 	return count == 0, nil
 }
 
-func isNeverReferencedAsAnFK(database *sql.DB, id int64) (bool, error) {
+func clientIsNeverReferencedAsAnFK(database *sql.DB, id int64) (bool, error) {
 	sqlQuery := "SELECT COUNT(*) FROM sessions WHERE client_id = ?"
 
 	stmt, err := database.Prepare(sqlQuery)
