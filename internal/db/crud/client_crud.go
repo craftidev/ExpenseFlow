@@ -12,7 +12,7 @@ func CreateClient(database *sql.DB, client db.Client) (int64, error) {
 	if err := client.PreInsertValid(); err != nil {
 		return 0, err
 	}
-	ok, err := checkClientNameIsUnique(database, client)
+	ok, err := clientNameIsUnique(database, client)
 	if err != nil {
 		return 0, err
 	}
@@ -80,7 +80,7 @@ func UpdateClient(database *sql.DB, client db.Client) error {
 	if err := client.Valid(); err != nil {
 		return err
 	}
-	ok, err := checkClientNameIsUnique(database, client)
+	ok, err := clientNameIsUnique(database, client)
 	if err != nil {
 		return err
 	}
@@ -118,14 +118,14 @@ func DeleteClientByID(database *sql.DB, id int64) error {
 		return utils.LogError("client ID must be positive and non-zero")
 	}
 
-	ok, err := clientIsNeverReferencedAsAnFK(database, id)
+	ok, err := clientIsNotRefAsAnFK(database, id)
 	if err != nil {
 		return err
 	}
 	if !ok {
 		return utils.LogError(
-            "client (ID: %v) is still referenced by sessions", id,
-        )
+			"client (ID: %v) is still referenced by sessions", id,
+		)
 	}
 
 	sqlQuery := "DELETE FROM clients WHERE id = ?"
@@ -152,7 +152,7 @@ func DeleteClientByID(database *sql.DB, id int64) error {
 	return nil
 }
 
-func checkClientNameIsUnique(database *sql.DB, client db.Client) (bool, error) {
+func clientNameIsUnique(database *sql.DB, client db.Client) (bool, error) {
 	sqlQuery := "SELECT COUNT(*) FROM clients WHERE name = ? AND id != ?"
 
 	stmt, err := database.Prepare(sqlQuery)
@@ -170,14 +170,14 @@ func checkClientNameIsUnique(database *sql.DB, client db.Client) (bool, error) {
 	return count == 0, nil
 }
 
-func clientIsNeverReferencedAsAnFK(database *sql.DB, id int64) (bool, error) {
+func clientIsNotRefAsAnFK(database *sql.DB, id int64) (bool, error) {
 	sqlQuery := "SELECT COUNT(*) FROM sessions WHERE client_id = ?"
 
 	stmt, err := database.Prepare(sqlQuery)
 	if err != nil {
 		return false, utils.LogError(
-            "rejected querry: %v, error: %v", sqlQuery, err,
-        )
+			"rejected querry: %v, error: %v", sqlQuery, err,
+		)
 	}
 	defer stmt.Close()
 
@@ -185,9 +185,9 @@ func clientIsNeverReferencedAsAnFK(database *sql.DB, id int64) (bool, error) {
 	err = stmt.QueryRow(id).Scan(&count)
 	if err != nil {
 		return false, utils.LogError(
-            "failed to count sessions with client ID: %v, error: %v",
-            id, err,
-        )
+			"failed to count sessions with client ID: %v, error: %v",
+			id, err,
+		)
 	}
 
 	return count == 0, nil

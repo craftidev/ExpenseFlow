@@ -149,7 +149,7 @@ func DeleteSessionByID(database *sql.DB, id int64) error {
 		return utils.LogError("session ID must be positive and non-zero")
 	}
 
-    ok, err := sessionIsNeverReferencedAsAnFK(database, id)
+    ok, err := sessionIsNotRefAsAnFK(database, id)
     if err != nil {
         return err
     }
@@ -184,7 +184,7 @@ func DeleteSessionByID(database *sql.DB, id int64) error {
 	return nil
 }
 
-func sessionIsNeverReferencedAsAnFK(database *sql.DB, id int64) (bool, error) {
+func sessionIsNotRefAsAnFK(database *sql.DB, id int64) (bool, error) {
 	sqlQuery := `
     SELECT COUNT(*) FROM (
         SELECT session_id FROM car_trips WHERE session_id = ?

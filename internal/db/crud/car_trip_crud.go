@@ -12,7 +12,7 @@ func CreateCarTrip(database *sql.DB, carTrip db.CarTrip) (int64, error) {
 	if err := carTrip.PreInsertValid(); err != nil {
 		return 0, err
 	}
-	ok, err := checkCarTripDateOnlyIsUnique(database, carTrip)
+	ok, err := carTripDateOnlyIsUnique(database, carTrip)
 	if err != nil {
 		return 0, err
 	}
@@ -93,7 +93,7 @@ func UpdateCarTrip(database *sql.DB, carTrip db.CarTrip) error {
 	if err := carTrip.Valid(); err != nil {
 		return err
 	}
-	ok, err := checkCarTripDateOnlyIsUnique(database, carTrip)
+	ok, err := carTripDateOnlyIsUnique(database, carTrip)
 	if err != nil {
 		return err
 	}
@@ -165,7 +165,7 @@ func DeleteCarTripByID(database *sql.DB, id int64) error {
 	return nil
 }
 
-func checkCarTripDateOnlyIsUnique(database *sql.DB, carTrip db.CarTrip) (bool, error) {
+func carTripDateOnlyIsUnique(database *sql.DB, carTrip db.CarTrip) (bool, error) {
 	sqlQuery := "SELECT COUNT(*) FROM car_trips WHERE date_only = ? AND id != ?"
 
 	stmt, err := database.Prepare(sqlQuery)
