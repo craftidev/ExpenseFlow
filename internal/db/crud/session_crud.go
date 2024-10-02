@@ -144,11 +144,21 @@ func UpdateSession(database *sql.DB, session db.Session) error {
 	return nil
 }
 
-// TODO restrict ON DELETE for CarTrip and Expense using SessionID as FK
 func DeleteSessionByID(database *sql.DB, id int64) error {
 	if id <= 0 {
 		return utils.LogError("session ID must be positive and non-zero")
 	}
+
+    ok, err := sessionIsNeverReferencedAsAnFK(database, id)
+    if err != nil {
+        return err
+    }
+    if !ok {
+        return utils.LogError(
+            "session (ID: %d) is still referenced by car trips or expenses",
+            id,
+        )
+    }
 
 	sqlQuery := "DELETE FROM sessions WHERE id = ?"
 	stmt, err := database.Prepare(sqlQuery)
@@ -172,4 +182,32 @@ func DeleteSessionByID(database *sql.DB, id int64) error {
 
 	log.Printf("[info] session (ID: %v) deleted", id)
 	return nil
+}
+
+func sessionIsNeverReferencedAsAnFK(database *sql.DB, id int64) (bool, error) {
+	sqlQuery := `
+    SELECT COUNT(*) FROM (
+        SELECT session_id FROM car_trips WHERE session_id = ?
+        UNION ALL
+        SELECT session_id FROM expenses WHERE session_id = ?
+    )`
+
+	stmt, err := database.Prepare(sqlQuery)
+	if err != nil {
+		return false, utils.LogError(
+            "rejected querry: %v, error: %v", sqlQuery, err,
+        )
+	}
+	defer stmt.Close()
+
+	var count int
+	err = stmt.QueryRow(id).Scan(&count)
+	if err != nil {
+		return false, utils.LogError(
+            "failed to count sessions with session ID: %v, error: %v",
+            id, err,
+        )
+	}
+
+	return count == 0, nil
 }
