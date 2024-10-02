@@ -89,8 +89,16 @@ func (s Session) String() string {
 
 func (s Session) PreInsertValid() error {
     switch {
-    case s.ClientID <= 0 || s.Location == "":
-		return utils.LogError("client ID and location cannot be empty or negative")
+    case    s.ClientID <= 0 ||
+            s.Location == "" ||
+            s.TripStartLocation.Valid && s.TripStartLocation.String == "" ||
+            s.TripEndLocation.Valid && s.TripEndLocation.String == "" ||
+            s.StartAtDateTime.Valid && s.StartAtDateTime.Time.IsZero() ||
+            s.EndAtDateTime.Valid && s.EndAtDateTime.Time.IsZero():
+		return utils.LogError(`
+            client ID, location, trip start/end location and
+            start/end at date time, cannot be empty or negative
+        `)
     case    s.EndAtDateTime.Valid &&
             s.StartAtDateTime.Valid &&
             s.StartAtDateTime.Time.After(s.EndAtDateTime.Time):
@@ -229,9 +237,13 @@ func (e Expense) String() string {
 
 func (e Expense) PreInsertValid() error {
 	switch {
-	case e.TypeID == 0 || e.Currency == "" || e.DateTime.IsZero():
+	case    e.TypeID == 0 ||
+            e.Currency == "" ||
+            e.DateTime.IsZero() ||
+            (e.ReceiptRelPath.Valid && e.ReceiptRelPath.String == "") ||
+            (e.Notes.Valid && e.Notes.String == ""):
 		return utils.LogError(
-			"type id, currency and date time  must be non-zero",
+			"type id, currency, receipt url, notes and date time must be non-zero",
 		)
 	case e.SessionID.Valid && e.SessionID.Int64 <= 0:
 		return utils.LogError("session ID must be positive and non-zero")
@@ -271,6 +283,8 @@ func (e Expense) checkReceipt() error {
 	errIsImageFile := isImageFile(receiptFullPath)
 
 	switch {
+    case e.ReceiptRelPath.String == "":
+		return utils.LogError("receipt URL is empty")
 	case errors.Is(errOs, os.ErrNotExist):
 		return utils.LogError("invalid receipt URL: %v", errOs)
 	case errOs != nil:
@@ -314,7 +328,7 @@ func isImageFile(filePath string) error {
 // Method: String, PreInsertValid, Valid
 type LineItem struct {
 	ID        int64
-	ExpenseID int
+	ExpenseID int64
 	TaxeRate  float64
 	Total     float64
 }
