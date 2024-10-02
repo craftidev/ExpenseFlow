@@ -1,6 +1,8 @@
 package db
 
 import (
+	"database/sql"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"io"
@@ -13,6 +15,7 @@ import (
 	"github.com/craftidev/expenseflow/internal/utils"
 )
 
+
 // List of models: Client, Session, CarTrip, ExpenseType, Expense, LineItem
 // Iterables: ExpenseList, LineItemList
 
@@ -21,10 +24,11 @@ import (
 // - Valid (need ID, zero value for NULLable column is ok) <
 // - PreReportValid (zero value for certain NULLable is not ok)
 
+
 // Client
 // Methods: String, PreInsertValid, Valid
 type Client struct {
-	ID   int
+	ID   int64
 	Name string
 }
 
@@ -52,31 +56,31 @@ func (c Client) Valid() error {
 // Session
 // Methods: String, PreInsertValid, Valid, PreReportValid
 type Session struct {
-	ID                int
-	ClientID          int
+	ID                int64
+	ClientID          int64
 	Location          string
-	TripStartLocation string
-	TripEndLocation   string
-	StartAtDateTime   time.Time
-	EndAtDateTime     time.Time
+	TripStartLocation sql.NullString
+	TripEndLocation   sql.NullString
+	StartAtDateTime   NullableTime
+	EndAtDateTime     NullableTime
 }
 
 func (s Session) String() string {
 	var format string
-	if s.TripStartLocation != "" {
-		format += s.TripStartLocation + " > "
+	if s.TripStartLocation.Valid {
+		format += s.TripStartLocation.String + " > "
 	}
 	format += fmt.Sprintf("[%v]", s.Location)
-	if s.TripEndLocation != "" {
-		format += " > " + s.TripEndLocation
+	if s.TripEndLocation.Valid {
+		format += " > " + s.TripEndLocation.String
 	}
 	format += "\n[ "
-	if s.StartAtDateTime.IsZero() {
-		format += s.StartAtDateTime.Format(time.DateOnly)
+	if s.StartAtDateTime.Valid {
+		format += s.StartAtDateTime.Time.Format(time.DateOnly)
 	}
 	format += " - "
-	if s.EndAtDateTime.IsZero() {
-		format += s.EndAtDateTime.Format(time.DateOnly)
+	if s.EndAtDateTime.Valid {
+		format += s.EndAtDateTime.Time.Format(time.DateOnly)
 	}
 	format += " ]"
 
@@ -87,11 +91,13 @@ func (s Session) PreInsertValid() error {
     switch {
     case s.ClientID <= 0 || s.Location == "":
 		return utils.LogError("client ID and location cannot be empty or negative")
-    case !s.EndAtDateTime.IsZero() && s.StartAtDateTime.After(s.EndAtDateTime):
+    case    s.EndAtDateTime.Valid &&
+            s.StartAtDateTime.Valid &&
+            s.StartAtDateTime.Time.After(s.EndAtDateTime.Time):
 		return utils.LogError("start date must be before end date")
     case    len([]rune(s.Location)) > 100 ||
-            len([]rune(s.TripStartLocation)) > 100 ||
-            len([]rune(s.TripEndLocation)) > 100:
+            (s.TripStartLocation.Valid && len([]rune(s.TripStartLocation.String)) > 100) ||
+            (s.TripEndLocation.Valid &&len([]rune(s.TripEndLocation.String)) > 100):
 		return utils.LogError(
 			"location, trip start location, and trip end location " +
 			"cannot exceed maximum length of 100 characters",
@@ -109,7 +115,7 @@ func (s Session) Valid() error {
 }
 
 func (s Session) PreReportValid() error {
-	if s.StartAtDateTime.IsZero() || s.EndAtDateTime.IsZero() {
+	if !s.StartAtDateTime.Valid || !s.EndAtDateTime.Valid {
 		return utils.LogError("start date and end date cannot be empty")
 	}
 	return s.Valid()
@@ -118,8 +124,8 @@ func (s Session) PreReportValid() error {
 // CarTrip
 // Methods: String, PreInsertValid, Valid
 type CarTrip struct {
-	ID         int
-	SessionID  int
+	ID         int64
+	SessionID  sql.NullInt64
 	DistanceKM float64
 	DateOnly   string
 	// TODO in crud: UNIQUE validation
@@ -127,8 +133,8 @@ type CarTrip struct {
 
 func (ct CarTrip) String() string {
 	var format string
-	if ct.SessionID != 0 {
-		format += fmt.Sprintf("Session ID: %d - ", ct.SessionID)
+	if ct.SessionID.Valid {
+		format += fmt.Sprintf("Session ID: %d - ", ct.SessionID.Int64)
 	}
 	format += fmt.Sprintf("%v km @ %v", ct.DistanceKM, ct.DateOnly)
 	return format
@@ -144,8 +150,8 @@ func (ct CarTrip) PreInsertValid() error {
 	}
 
 	switch {
-    case ct.SessionID < 0:
-        return utils.LogError("session ID must be non-negative")
+    case ct.SessionID.Valid && ct.SessionID.Int64 <= 0:
+        return utils.LogError("session ID must be positive and non-zero")
 	case ct.DistanceKM == 0 || dateTimeFormat.IsZero():
 		return utils.LogError("distance km and datetime must be non zero")
 	case ct.DistanceKM < 0:
@@ -170,7 +176,7 @@ func (ct CarTrip) Valid() error {
 // ExpenseType
 // Methods: String, PreInsertValid, Valid
 type ExpenseType struct {
-	ID   int
+	ID   int64
 	Name string // TODO: check UNIQUE in crud
 }
 
@@ -198,12 +204,12 @@ func (et ExpenseType) Valid() error {
 // Expense
 // Methods: String, PreInsertValid, Valid, PreReportValid
 type Expense struct {
-	ID             int
-	SessionID      int
-	TypeID         int
+	ID             int64
+	SessionID      sql.NullInt64
+	TypeID         int64
 	Currency       string
-	ReceiptRelPath string
-	Notes          string
+	ReceiptRelPath sql.NullString
+	Notes          sql.NullString
 	DateTime       time.Time
 }
 
@@ -212,10 +218,10 @@ func (e Expense) String() string {
 		"Type: %v (%v) @ %v",
 		e.TypeID, e.Currency, e.DateTime.Format(time.DateOnly),
 	)
-	if e.ReceiptRelPath != "" {
+	if e.ReceiptRelPath.Valid {
 		format += fmt.Sprintf("\n%v", e.ReceiptRelPath)
 	}
-	if e.Notes != "" {
+	if e.Notes.Valid {
 		format += fmt.Sprintf("\nNotes: %v", e.Notes)
 	}
 	return format
@@ -227,15 +233,15 @@ func (e Expense) PreInsertValid() error {
 		return utils.LogError(
 			"type id, currency and date time  must be non-zero",
 		)
-	case e.SessionID < 0:
-		return utils.LogError("session ID can't be negative")
+	case e.SessionID.Valid && e.SessionID.Int64 <= 0:
+		return utils.LogError("session ID must be positive and non-zero")
 	case e.TypeID <= 0:
 		return utils.LogError("type ID must be positive and non-zero.")
 	case len([]rune(e.Currency)) > 10:
 		return utils.LogError("currency can't exceeds 10 characters")
-	case len([]rune(e.ReceiptRelPath)) > 50:
+	case e.ReceiptRelPath.Valid && len([]rune(e.ReceiptRelPath.String)) > 50:
 		return utils.LogError("receipt URL can't exceeds 50 characters")
-	case len([]rune(e.Notes)) > 150:
+	case e.Notes.Valid && len([]rune(e.Notes.String)) > 150:
 		return utils.LogError("notes can't exceeds 150 characters")
 	default:
 		return nil
@@ -257,13 +263,14 @@ func (e Expense) PreReportValid() error {
 }
 
 func (e Expense) checkReceipt() error {
-	receiptFullPath := filepath.Join(config.ReceiptsDir, e.ReceiptRelPath)
+    if !e.ReceiptRelPath.Valid {
+		return utils.LogError("receipt URL is empty")
+    }
+	receiptFullPath := filepath.Join(config.ReceiptsDir, e.ReceiptRelPath.String)
 	_, errOs := os.Stat(receiptFullPath)
 	errIsImageFile := isImageFile(receiptFullPath)
 
 	switch {
-	case e.ReceiptRelPath == "":
-		return utils.LogError("receipt URL is empty")
 	case errors.Is(errOs, os.ErrNotExist):
 		return utils.LogError("invalid receipt URL: %v", errOs)
 	case errOs != nil:
@@ -306,7 +313,7 @@ func isImageFile(filePath string) error {
 // LineItem
 // Method: String, PreInsertValid, Valid
 type LineItem struct {
-	ID        int
+	ID        int64
 	ExpenseID int
 	TaxeRate  float64
 	Total     float64
@@ -379,6 +386,38 @@ func (liList LineItemList) SumByTaxeRates() (map[float64]float64, error) {
 		result[lineItem.TaxeRate] += lineItem.Total
 	}
 	return result, nil
+}
+
+// Custom Nullable time.Time as the library sql doesn't have one
+type NullableTime struct {
+    Time time.Time
+    Valid bool
+}
+
+func (nt *NullableTime) Scan(value interface{}) error {
+    if value == nil {
+        nt.Time, nt.Valid = time.Time{}, false
+        return nil
+    }
+    nt.Valid = true
+    switch v := value.(type) {
+    case time.Time:
+        nt.Time = v
+        return nil
+    case []byte:
+        var err error
+        nt.Time, err = time.Parse(time.RFC3339, string(v))
+        return utils.LogError("Invalid time, error: %v", err)
+    default:
+        return utils.LogError("unable to scan NullableTime")
+    }
+}
+
+func (nt NullableTime) Value() (driver.Value, error) {
+    if !nt.Valid {
+        return nil, nil
+    }
+    return nt.Time, nil
 }
 
 // TODO Equal func for my maps
