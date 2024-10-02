@@ -66,8 +66,8 @@ func GetSessionByID(database *sql.DB, id int64) (*db.Session, error) {
                     trip_start_location,
                     trip_end_location,
                     start_at_date_time,
-                    end_at_date_time
-                FROM sessions WHERE id = ?`
+                    end_at_date_time` +
+                " FROM sessions WHERE id = ?"
     stmt, err := database.Prepare(sqlQuery)
     if err != nil {
 		return nil, utils.LogError(
@@ -104,14 +104,14 @@ func UpdateSession(database *sql.DB, session db.Session) error {
 		return err
 	}
 
-	sqlQuery := `UPDATE sessions SET
+	sqlQuery := "UPDATE sessions SET " + `
                     client_id = ?,
                     location = ?,
                     trip_start_location = ?,
                     trip_end_location = ?,
                     start_at_date_time = ?,
-                    end_at_date_time = ?
-                WHERE id = ?`
+                    end_at_date_time = ?` +
+                " WHERE id = ?"
 	stmt, err := database.Prepare(sqlQuery)
 	if err != nil {
 		return utils.LogError("rejected querry: %v, error: %v", sqlQuery, err)
@@ -187,9 +187,9 @@ func DeleteSessionByID(database *sql.DB, id int64) error {
 func sessionIsNotRefAsAnFK(database *sql.DB, id int64) (bool, error) {
 	sqlQuery := `
     SELECT COUNT(*) FROM (
-        SELECT session_id FROM car_trips WHERE session_id = ?
-        UNION ALL
-        SELECT session_id FROM expenses WHERE session_id = ?
+        SELECT session_id FROM car_trips WHERE session_id = ?` +
+        " UNION ALL " +
+        `SELECT session_id FROM expenses WHERE session_id = ?
     )`
 
 	stmt, err := database.Prepare(sqlQuery)

@@ -103,11 +103,11 @@ func UpdateCarTrip(database *sql.DB, carTrip db.CarTrip) error {
         )
 	}
 
-	sqlQuery := `UPDATE car_trips SET
+	sqlQuery := "UPDATE car_trips SET " + `
                     session_id = ?,
                     distance_km = ?,
-                    date_only = ?
-                WHERE id = ?`
+                    date_only = ?` +
+                " WHERE id = ?"
 	stmt, err := database.Prepare(sqlQuery)
 	if err != nil {
 		return utils.LogError("rejected querry: %v, error: %v", sqlQuery, err)
