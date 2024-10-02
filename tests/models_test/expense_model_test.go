@@ -1,6 +1,7 @@
 package models_test
 
 import (
+	"database/sql"
 	"os"
 	"path/filepath"
 	"testing"
@@ -15,11 +16,17 @@ import (
 func getValidExpense() db.Expense {
 	return db.Expense{
 		ID:             1,
-		SessionID:      1,
+		SessionID:      sql.NullInt64{Int64: 1, Valid: true},
 		TypeID:         1,
 		Currency:       "USD",
-		ReceiptRelPath: "valid_receipt_test.png",
-		Notes:          "Valid notes here.",
+		ReceiptRelPath: sql.NullString{
+            String: "valid_receipt_test.png",
+            Valid: true,
+        },
+		Notes:          sql.NullString{
+            String: "Valid notes here.",
+            Valid: true,
+        },
 		DateTime:       time.Now(),
 	}
 }
@@ -32,35 +39,39 @@ func TestExpensePreInsertValid(t *testing.T) {
 	}
 
 	// Nullable  SessionID
-	validExpense.SessionID = 0
+	validExpense.SessionID.Valid = false
 	err = validExpense.PreInsertValid()
 	if err != nil {
 		t.Errorf("expected valid expense with zero-valued SessionID, got error: %v", err)
 	}
 
 	// Nullable ReceiptRelPath
-	validExpense.ReceiptRelPath = ""
+	validExpense.ReceiptRelPath.Valid = false
 	err = validExpense.PreInsertValid()
 	if err != nil {
 		t.Errorf("expected valid expense with zero-valued ReceiptRelPath, got error: %v", err)
 	}
 
 	// Nullable Notes
-	validExpense.Notes = ""
+	validExpense.Notes.Valid = false
 	err = validExpense.PreInsertValid()
 	if err != nil {
 		t.Errorf("expected valid expense with zero-valued Notes, got error: %v", err)
 	}
 
-	invalidExpenses := tests.InitializeSliceOfValidAny(8, validExpense)
-	invalidExpenses[0].SessionID = -1
-	invalidExpenses[1].TypeID = 0
-	invalidExpenses[2].TypeID = -1
-	invalidExpenses[3].Currency = ""
-	invalidExpenses[4].Currency = "a" + string(make([]rune, 10))
-	invalidExpenses[5].ReceiptRelPath = "a" + string(make([]rune, 50))
-	invalidExpenses[6].Notes = "a" + string(make([]rune, 150))
-	invalidExpenses[7].DateTime = time.Time{}
+    validExpense = getValidExpense()
+	invalidExpenses := tests.InitializeSliceOfValidAny(11, validExpense)
+	invalidExpenses[0].SessionID.Int64 = -1
+	invalidExpenses[1].SessionID.Int64 = 0
+	invalidExpenses[2].TypeID = 0
+	invalidExpenses[3].TypeID = -1
+	invalidExpenses[4].Currency = ""
+	invalidExpenses[5].Currency = "a" + string(make([]rune, 10))
+	invalidExpenses[6].ReceiptRelPath.String = ""
+	invalidExpenses[7].ReceiptRelPath.String = "a" + string(make([]rune, 50))
+	invalidExpenses[8].Notes.String = ""
+	invalidExpenses[9].Notes.String = "a" + string(make([]rune, 150))
+	invalidExpenses[10].DateTime = time.Time{}
 	tests.ValidateEntities(t, invalidExpenses, true, func(e db.Expense) error {
 		return e.PreInsertValid()
 	})
@@ -85,13 +96,13 @@ func TestPreReportValid(t *testing.T) {
 	validExpense := getValidExpense()
 
 	invalidExpenses := tests.InitializeSliceOfValidAny(4, validExpense)
-	invalidExpenses[0].ReceiptRelPath = "non_exitent_file.png"
-	invalidExpenses[1].ReceiptRelPath = "invalid_receipt_test.txt"
-	invalidExpenses[2].ReceiptRelPath = "corrupted_receipt_test.png"
-	invalidExpenses[3].ReceiptRelPath = "protected_receipt_test.png"
+	invalidExpenses[0].ReceiptRelPath.String = "non_exitent_file.png"
+	invalidExpenses[1].ReceiptRelPath.String = "invalid_receipt_test.txt"
+	invalidExpenses[2].ReceiptRelPath.String = "corrupted_receipt_test.png"
+	invalidExpenses[3].ReceiptRelPath.String = "protected_receipt_test.png"
 
 	// Set permissions to 000 to create a protected file
-	protectedFilePath := filepath.Join(config.ReceiptsDirTest, invalidExpenses[3].ReceiptRelPath)
+	protectedFilePath := filepath.Join(config.ReceiptsDirTest, invalidExpenses[3].ReceiptRelPath.String)
 	err := os.Chmod(protectedFilePath, 0000)
 	if err != nil {
 		t.Fatalf("failed to set file permissions before testing: %v", err)
