@@ -1,4 +1,4 @@
-package crud_test
+package crud_tests
 
 import (
 	"database/sql"
