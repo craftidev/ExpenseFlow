@@ -48,14 +48,13 @@ func CreateSession(database *sql.DB, session db.Session) (int64, error) {
 
     id, err := res.LastInsertId()
     if err != nil {
-        log.Println("[error] new session created with unknown ID") // The error did not prevent the INSERT
         return 0, utils.LogError(
-            "failed to get last inserted ID: %v, error: %v",
+            "new session created, but failed to get last inserted ID: %v, error: %v",
             session, err,
         )
     }
-    log.Printf("[info] new session (ID: %v) created", id)
 
+    log.Printf("[info] new session (ID: %v) created", id)
     return id, nil
 }
 

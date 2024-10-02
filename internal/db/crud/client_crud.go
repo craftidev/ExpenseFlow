@@ -18,37 +18,36 @@ func CreateClient(database *sql.DB, client db.Client) (int64, error) {
 	}
 	if !ok {
 		return 0, utils.LogError(
-            "client name already exists: %s", client.Name,
-        )
+			"client name already exists: %s", client.Name,
+		)
 	}
 
 	sqlQuery := "INSERT INTO clients(name) VALUES (?)"
 	stmt, err := database.Prepare(sqlQuery)
 	if err != nil {
 		return 0, utils.LogError(
-            "rejected querry: %v, error: %v", sqlQuery, err,
-        )
+			"rejected querry: %v, error: %v", sqlQuery, err,
+		)
 	}
 	defer stmt.Close()
 
 	res, err := stmt.Exec(client.Name)
 	if err != nil {
 		return 0, utils.LogError(
-            "unable to create client: %v, error: %v",
-            client, err,
-        )
+			"unable to create client: %v, error: %v",
+			client, err,
+		)
 	}
 
 	id, err := res.LastInsertId()
 	if err != nil {
-		log.Println("[error] new client created with unknown ID") // The error did not prevent the INSERT
 		return 0, utils.LogError(
-            "failed to get last inserted ID: %v, error: %v",
-            client, err,
-        )
+			"new client created, but failed to get last inserted ID: %v, error: %v",
+			client, err,
+		)
 	}
-	log.Printf("[info] new client (ID: %v) created", id)
 
+	log.Printf("[info] new client (ID: %v) created", id)
 	return id, nil
 }
 
@@ -57,8 +56,8 @@ func GetClientByID(database *sql.DB, id int64) (*db.Client, error) {
 	stmt, err := database.Prepare(sqlQuery)
 	if err != nil {
 		return nil, utils.LogError(
-            "rejected querry: %v, error: %v", sqlQuery, err,
-        )
+			"rejected querry: %v, error: %v", sqlQuery, err,
+		)
 	}
 	defer stmt.Close()
 
@@ -119,13 +118,13 @@ func DeleteClientByID(database *sql.DB, id int64) error {
 		return utils.LogError("client ID must be positive and non-zero")
 	}
 
-    ok, err := isNeverReferencedAsAnFK(database, id);
-    if err != nil {
-        return err
-    }
-    if !ok {
-        return utils.LogError("client still referenced in other tables")
-    }
+	ok, err := isNeverReferencedAsAnFK(database, id)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return utils.LogError("client still referenced in other tables")
+	}
 
 	sqlQuery := "DELETE FROM clients WHERE id = ?"
 	stmt, err := database.Prepare(sqlQuery)
@@ -170,19 +169,19 @@ func checkClientNameIsUnique(database *sql.DB, client db.Client) (bool, error) {
 }
 
 func isNeverReferencedAsAnFK(database *sql.DB, id int64) (bool, error) {
-    sqlQuery := "SELECT COUNT(*) FROM sessions WHERE client_id = ?"
+	sqlQuery := "SELECT COUNT(*) FROM sessions WHERE client_id = ?"
 
-    stmt, err := database.Prepare(sqlQuery)
-    if err != nil {
+	stmt, err := database.Prepare(sqlQuery)
+	if err != nil {
 		return false, utils.LogError("rejected querry: %v, error: %v", sqlQuery, err)
 	}
-    defer stmt.Close()
+	defer stmt.Close()
 
-    var count int
-    err = stmt.QueryRow(id).Scan(&count)
-    if err!= nil {
-        return false, utils.LogError("failed to count sessions with client ID: %v, error: %v", id, err)
-    }
+	var count int
+	err = stmt.QueryRow(id).Scan(&count)
+	if err != nil {
+		return false, utils.LogError("failed to count sessions with client ID: %v, error: %v", id, err)
+	}
 
-    return count == 0, nil
+	return count == 0, nil
 }
