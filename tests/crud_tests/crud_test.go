@@ -126,14 +126,14 @@ func TestGetModelsByID(t *testing.T) {
             t.Errorf("data fetched for Session (%v) doesn't match data inserted (%v)",
             session, validSession,
         )
-        }
+    }
     if  expense.ID != validExpense.ID ||
         expense.SessionID != validExpense.SessionID ||
         expense.TypeID != validExpense.TypeID ||
         expense.Currency != validExpense.Currency ||
         expense.ReceiptRelPath != validExpense.ReceiptRelPath ||
         expense.Notes != validExpense.Notes ||
-        expense.DateTime.Equal(validExpense.DateTime) {
+        !expense.DateTime.Equal(validExpense.DateTime) {
             t.Errorf("data fetched for Expense (%v) doesn't match data inserted (%v)",
             expense, validExpense,
         )
