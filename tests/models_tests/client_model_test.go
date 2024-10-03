@@ -3,20 +3,13 @@ package models_tests
 import (
 	"testing"
 
-	"github.com/craftidev/expenseflow/internal/db"
+	"github.com/craftidev/expenseflow/tests"
 )
 
 
-func GetValidClient() db.Client {
-    return db.Client{
-        ID:   1,
-        Name: "John Doe",
-    }
-}
-
 func TestClientValidation(t *testing.T) {
     // Test case with valid client
-    client := GetValidClient()
+    client := tests.GetValidClient()
     if err := client.Valid(); err != nil {
         t.Errorf("expected valid client, got error: %v", err)
     }

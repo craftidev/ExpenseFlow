@@ -9,32 +9,9 @@ import (
 	"github.com/craftidev/expenseflow/tests"
 )
 
-func GetValidSession() db.Session {
-	return db.Session{
-		ID:                1,
-		ClientID:          1,
-		Location:          "New York City (NY)",
-		TripStartLocation: sql.NullString{
-            String: "Philadelphia (PA)",
-            Valid: true,
-        },
-		TripEndLocation: sql.NullString{
-            String: "Boston (MA)",
-            Valid: true,
-        },
-		StartAtDateTime:   db.NullableTime{
-            Time: time.Now(),
-            Valid: true,
-        },
-		EndAtDateTime:   db.NullableTime{
-            Time: time.Now().Add(24 * time.Hour),
-            Valid: true,
-        },
-    }
-}
 
 func TestSessionPreInsertValid(t *testing.T) {
-	validSession := GetValidSession()
+	validSession := tests.GetValidSession()
 
     validSessions := tests.InitializeSliceOfValidAny(6, validSession)
     validSessions[1].ID = 0
@@ -66,7 +43,7 @@ func TestSessionPreInsertValid(t *testing.T) {
 }
 
 func TestSessionValid(t *testing.T) {
-	validSession := GetValidSession()
+	validSession := tests.GetValidSession()
 
     validSessions := tests.InitializeSliceOfValidAny(5, validSession)
     validSessions[1].TripStartLocation.Valid = false
@@ -86,7 +63,7 @@ func TestSessionValid(t *testing.T) {
 }
 
 func TestSesionPreReportValid(t *testing.T) {
-    validSession := GetValidSession()
+    validSession := tests.GetValidSession()
 
     validSessions := tests.InitializeSliceOfValidAny(3, validSession)
     validSessions[1].TripStartLocation.Valid = false

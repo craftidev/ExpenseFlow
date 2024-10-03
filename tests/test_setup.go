@@ -5,6 +5,7 @@ import (
 	"log"
 	"runtime"
 	"testing"
+	"time"
 
 	"github.com/craftidev/expenseflow/internal/db"
 )
@@ -82,5 +83,79 @@ func ValidateEntities[T any](
                 i, file, line,
             )
         }
+    }
+}
+
+func GetValidCarTrip() db.CarTrip {
+    return db.CarTrip{
+        ID:         1,
+        SessionID:  sql.NullInt64{Int64: 1, Valid: true},
+        DistanceKM: 50.5,
+        DateOnly:  "2022-01-01",
+    }
+}
+
+func GetValidClient() db.Client {
+    return db.Client{
+        ID:   1,
+        Name: "John Doe",
+    }
+}
+
+func GetValidExpense() db.Expense {
+	return db.Expense{
+		ID:             1,
+		SessionID:      sql.NullInt64{Int64: 1, Valid: true},
+		TypeID:         1,
+		Currency:       "USD",
+		ReceiptRelPath: sql.NullString{
+            String: "valid_receipt_test.png",
+            Valid: true,
+        },
+		Notes:          sql.NullString{
+            String: "Valid notes here.",
+            Valid: true,
+        },
+		DateTime:       time.Now(),
+	}
+}
+
+func GetValidExpenseType() db.ExpenseType {
+    return db.ExpenseType{
+        ID:   1,
+        Name: "Transportation",
+    }
+}
+
+func GetValidLineItem() db.LineItem {
+    return db.LineItem{
+        ID:   1,
+        ExpenseID: 1,
+        TaxeRate: 5.5,
+        Total: 15.43,
+    }
+}
+
+func GetValidSession() db.Session {
+	return db.Session{
+		ID:                1,
+		ClientID:          1,
+		Location:          "New York City (NY)",
+		TripStartLocation: sql.NullString{
+            String: "Philadelphia (PA)",
+            Valid: true,
+        },
+		TripEndLocation: sql.NullString{
+            String: "Boston (MA)",
+            Valid: true,
+        },
+		StartAtDateTime:   db.NullableTime{
+            Time: time.Now(),
+            Valid: true,
+        },
+		EndAtDateTime:   db.NullableTime{
+            Time: time.Now().Add(24 * time.Hour),
+            Valid: true,
+        },
     }
 }

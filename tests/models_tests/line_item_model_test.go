@@ -8,17 +8,9 @@ import (
 	"github.com/craftidev/expenseflow/tests"
 )
 
-func GetValidLineItem() db.LineItem {
-    return db.LineItem{
-        ID:   1,
-        ExpenseID: 1,
-        TaxeRate: 5.5,
-        Total: 15.43,
-    }
-}
 
 func TestLineItemPreInsertValid(t *testing.T) {
-    validLineItem := GetValidLineItem()
+    validLineItem := tests.GetValidLineItem()
 
     validLineItems := tests.InitializeSliceOfValidAny(3, validLineItem)
     validLineItems[1].ID = 0
@@ -42,7 +34,7 @@ func TestLineItemPreInsertValid(t *testing.T) {
 }
 
 func TestLineItemValid(t *testing.T) {
-    validLineItem := GetValidLineItem()
+    validLineItem := tests.GetValidLineItem()
 
     invalidLineItems := tests.InitializeSliceOfValidAny(2, validLineItem)
     invalidLineItems[0].ID = -1

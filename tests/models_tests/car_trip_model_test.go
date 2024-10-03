@@ -1,7 +1,6 @@
 package models_tests
 
 import (
-	"database/sql"
 	"testing"
 	"time"
 
@@ -9,17 +8,9 @@ import (
 	"github.com/craftidev/expenseflow/tests"
 )
 
-func GetValidCarTrip() db.CarTrip {
-    return db.CarTrip{
-        ID:         1,
-        SessionID:  sql.NullInt64{Int64: 1, Valid: true},
-        DistanceKM: 50.5,
-        DateOnly:  "2022-01-01",
-    }
-}
 
 func TestCarTripPreInsertValid(t *testing.T) {
-    validCarTrip := GetValidCarTrip()
+    validCarTrip := tests.GetValidCarTrip()
 
     validCarTrips := tests.InitializeSliceOfValidAny(3, validCarTrip)
     validCarTrips[1].ID = 0
@@ -42,7 +33,7 @@ func TestCarTripPreInsertValid(t *testing.T) {
 }
 
 func TestCarTripValid(t *testing.T) {
-    validCarTrip := GetValidCarTrip()
+    validCarTrip := tests.GetValidCarTrip()
 
     validCarTrips := tests.InitializeSliceOfValidAny(2, validCarTrip)
     validCarTrips[1].SessionID.Valid = false
