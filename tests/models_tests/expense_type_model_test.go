@@ -7,7 +7,7 @@ import (
 	"github.com/craftidev/expenseflow/tests"
 )
 
-func getValidExpenseType() db.ExpenseType {
+func GetValidExpenseType() db.ExpenseType {
     return db.ExpenseType{
         ID:   1,
         Name: "Transportation",
@@ -15,7 +15,7 @@ func getValidExpenseType() db.ExpenseType {
 }
 
 func TestExpenseTypePreInsertValid(t *testing.T) {
-    validExpenseType := getValidExpenseType()
+    validExpenseType := GetValidExpenseType()
 
     validExpenseTypes := tests.InitializeSliceOfValidAny(2, validExpenseType)
     validExpenseTypes[1].ID = 0
@@ -32,7 +32,7 @@ func TestExpenseTypePreInsertValid(t *testing.T) {
 }
 
 func TestExpenseTypeValid(t *testing.T) {
-    validExpenseType := getValidExpenseType()
+    validExpenseType := GetValidExpenseType()
 
     invalidExpenseTypes := tests.InitializeSliceOfValidAny(2, validExpenseType)
     invalidExpenseTypes[0].ID = -1

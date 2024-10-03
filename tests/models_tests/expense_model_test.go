@@ -13,7 +13,7 @@ import (
 )
 
 // Return the most restricted valid Expense
-func getValidExpense() db.Expense {
+func GetValidExpense() db.Expense {
 	return db.Expense{
 		ID:             1,
 		SessionID:      sql.NullInt64{Int64: 1, Valid: true},
@@ -32,7 +32,7 @@ func getValidExpense() db.Expense {
 }
 
 func TestExpensePreInsertValid(t *testing.T) {
-	validExpense := getValidExpense()
+	validExpense := GetValidExpense()
 	err := validExpense.PreInsertValid()
 	if err != nil {
 		t.Errorf("expected valid expense, got error: %v", err)
@@ -59,7 +59,7 @@ func TestExpensePreInsertValid(t *testing.T) {
 		t.Errorf("expected valid expense with zero-valued Notes, got error: %v", err)
 	}
 
-    validExpense = getValidExpense()
+    validExpense = GetValidExpense()
 	invalidExpenses := tests.InitializeSliceOfValidAny(11, validExpense)
 	invalidExpenses[0].SessionID.Int64 = -1
 	invalidExpenses[1].SessionID.Int64 = 0
@@ -80,7 +80,7 @@ func TestExpensePreInsertValid(t *testing.T) {
 // Don't re-test what's already tested in PreInsertValid
 func TestValid(t *testing.T) {
 	// Valid Expense
-	validExpense := getValidExpense()
+	validExpense := GetValidExpense()
 
 	invalidExpenses := tests.InitializeSliceOfValidAny(2, validExpense)
 	invalidExpenses[0].ID = -1
@@ -93,7 +93,7 @@ func TestValid(t *testing.T) {
 // Don't re-test what's already tested in PreInsertValid or Valid
 func TestPreReportValid(t *testing.T) {
 	// Valid Expense
-	validExpense := getValidExpense()
+	validExpense := GetValidExpense()
 
 	invalidExpenses := tests.InitializeSliceOfValidAny(4, validExpense)
 	invalidExpenses[0].ReceiptRelPath.String = "non_exitent_file.png"

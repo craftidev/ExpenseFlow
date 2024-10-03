@@ -9,7 +9,7 @@ import (
 	"github.com/craftidev/expenseflow/tests"
 )
 
-func getValidCarTrip() db.CarTrip {
+func GetValidCarTrip() db.CarTrip {
     return db.CarTrip{
         ID:         1,
         SessionID:  sql.NullInt64{Int64: 1, Valid: true},
@@ -19,7 +19,7 @@ func getValidCarTrip() db.CarTrip {
 }
 
 func TestCarTripPreInsertValid(t *testing.T) {
-    validCarTrip := getValidCarTrip()
+    validCarTrip := GetValidCarTrip()
 
     validCarTrips := tests.InitializeSliceOfValidAny(3, validCarTrip)
     validCarTrips[1].ID = 0
@@ -42,7 +42,7 @@ func TestCarTripPreInsertValid(t *testing.T) {
 }
 
 func TestCarTripValid(t *testing.T) {
-    validCarTrip := getValidCarTrip()
+    validCarTrip := GetValidCarTrip()
 
     validCarTrips := tests.InitializeSliceOfValidAny(2, validCarTrip)
     validCarTrips[1].SessionID.Valid = false

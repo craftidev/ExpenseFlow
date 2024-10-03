@@ -9,7 +9,7 @@ import (
 	"github.com/craftidev/expenseflow/tests"
 )
 
-func getValidSession() db.Session {
+func GetValidSession() db.Session {
 	return db.Session{
 		ID:                1,
 		ClientID:          1,
@@ -34,7 +34,7 @@ func getValidSession() db.Session {
 }
 
 func TestSessionPreInsertValid(t *testing.T) {
-	validSession := getValidSession()
+	validSession := GetValidSession()
 
     validSessions := tests.InitializeSliceOfValidAny(6, validSession)
     validSessions[1].ID = 0
@@ -66,7 +66,7 @@ func TestSessionPreInsertValid(t *testing.T) {
 }
 
 func TestSessionValid(t *testing.T) {
-	validSession := getValidSession()
+	validSession := GetValidSession()
 
     validSessions := tests.InitializeSliceOfValidAny(5, validSession)
     validSessions[1].TripStartLocation.Valid = false
@@ -86,7 +86,7 @@ func TestSessionValid(t *testing.T) {
 }
 
 func TestSesionPreReportValid(t *testing.T) {
-    validSession := getValidSession()
+    validSession := GetValidSession()
 
     validSessions := tests.InitializeSliceOfValidAny(3, validSession)
     validSessions[1].TripStartLocation.Valid = false
