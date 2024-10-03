@@ -75,6 +75,7 @@ func GetExpenseByID(database *sql.DB, id int64) (*db.Expense, error) {
 	defer stmt.Close()
 
 	var expense db.Expense
+    var dateTime string
 	err = stmt.QueryRow(id).Scan(
         &expense.ID,
         &expense.SessionID,
@@ -82,7 +83,7 @@ func GetExpenseByID(database *sql.DB, id int64) (*db.Expense, error) {
         &expense.Currency,
         &expense.ReceiptRelPath,
         &expense.Notes,
-        &expense.DateTime,
+        &dateTime,
     )
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -90,6 +91,11 @@ func GetExpenseByID(database *sql.DB, id int64) (*db.Expense, error) {
 		}
 		return nil, utils.LogError("failed to fetch expense by ID: %v", err)
 	}
+
+    expense.DateTime, err = ParsingStrToTime(dateTime)
+    if err!= nil {
+        return nil, err
+    }
 
 	if err := expense.Valid(); err != nil {
 		return nil, err // Integrity of data is breached

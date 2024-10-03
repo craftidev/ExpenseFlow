@@ -77,20 +77,31 @@ func GetSessionByID(database *sql.DB, id int64) (*db.Session, error) {
     defer stmt.Close()
 
     var session db.Session
+    var startAtDateTime sql.NullString
+    var endAtDateTime sql.NullString
     err = stmt.QueryRow(id).Scan(
         &session.ID,
         &session.ClientID,
         &session.Location,
         &session.TripStartLocation,
         &session.TripEndLocation,
-        &session.StartAtDateTime,
-        &session.EndAtDateTime,
+        &startAtDateTime,
+        &endAtDateTime,
     )
     if err != nil {
         if err == sql.ErrNoRows {
             return nil, utils.LogError("session not found (ID: %d)", id)
         }
         return nil, utils.LogError("failed to fetch session by ID: %v", err)
+    }
+
+    session.StartAtDateTime, err = ParsingNullableStrToTime(startAtDateTime)
+    if err != nil {
+        return nil, err
+    }
+    session.EndAtDateTime, err = ParsingNullableStrToTime(endAtDateTime)
+    if err != nil {
+        return nil, err
     }
 
     if err := session.Valid(); err != nil {
