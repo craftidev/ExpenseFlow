@@ -13,7 +13,7 @@ func CreateLineItem(database *sql.DB, lineItem db.LineItem) (int64, error) {
 		return 0, err
 	}
 
-	sqlQuery := `INSERT INTO clients(
+	sqlQuery := `INSERT INTO line_items(
                     expense_id,
                     taxe_rate,
                     total

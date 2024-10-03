@@ -20,7 +20,7 @@ func CreateSession(database *sql.DB, session db.Session) (int64, error) {
             location,
             trip_start_location,
             trip_end_location,
-            start_at_date_time
+            start_at_date_time,
             end_at_date_time
         ) VALUES (?, ?, ?, ?, ?, ?)`
     stmt, err := database.Prepare(sqlQuery)
