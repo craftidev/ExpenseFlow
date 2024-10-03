@@ -52,17 +52,17 @@ func InitDB(DBPath string, db *sql.DB) error {
     log.Println("[info] Database created.")
 
     // HACK TODO give user choice to add standard migration files
-    hack := filepath.Join(config.MigrationsDirPath, "standard_models", "orisha_g8.sql")
-    schema, err := os.ReadFile(hack)
-    if err != nil {
-        log.Fatalf("[fatal][hack] failed to read schema file: %v", err)
-    }
+    // hack := filepath.Join(config.MigrationsDirPath, "standard_models", "orisha_g8.sql")
+    // schema, err := os.ReadFile(hack)
+    // if err != nil {
+    //     log.Fatalf("[fatal][hack] failed to read schema file: %v", err)
+    // }
 
-    _, err = db.Exec(string(schema))
-    if err!= nil {
-        log.Fatalf("[fatal][hack] failed to apply migration %v: %v", hack, err)
-    }
-    log.Println("[hack] Standard migration ORISHA G8 files added.")
+    // _, err = db.Exec(string(schema))
+    // if err!= nil {
+    //     log.Fatalf("[fatal][hack] failed to apply migration %v: %v", hack, err)
+    // }
+    // log.Println("[hack] Standard migration ORISHA G8 files added.")
 
     return nil
 }
