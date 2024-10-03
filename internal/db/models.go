@@ -434,6 +434,10 @@ func (nt NullableTime) Value() (driver.Value, error) {
     return nt.Time, nil
 }
 
+func (nt NullableTime) Equal(other NullableTime) bool {
+    return nt.Time.Equal(other.Time) && nt.Valid == other.Valid
+}
+
 // TODO Equal func for my maps
 // func (a AmountList) Equal(other AmountList) (bool, error) {
 //     if err := a.Valid(); err != nil {
