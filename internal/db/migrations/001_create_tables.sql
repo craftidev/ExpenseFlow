@@ -27,9 +27,9 @@ CREATE TABLE IF NOT EXISTS sessions (
         LENGTH(trip_start_location) <= 100 AND
         LENGTH(trip_end_location)   <= 100
     ),
-    CONSTRAINT ck_normal_size_start_end_at_date_19 CHECK (
-        (start_at_date_time == NULL OR LENGTH(start_at_date_time) == 19) AND
-        (end_at_date_time   == NULL OR LENGTH(end_at_date_time)   == 19)
+    CONSTRAINT ck_normal_size_start_end_at_date_60 CHECK (
+        (start_at_date_time == NULL OR LENGTH(start_at_date_time) <= 60) AND
+        (end_at_date_time   == NULL OR LENGTH(end_at_date_time)   <= 60)
     )
 );
 
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS expenses (
     CONSTRAINT ck_normal_size_currency_10           CHECK (LENGTH(currency)    <= 10),
     CONSTRAINT ck_normal_size_receipt_rel_path_50   CHECK (LENGTH(receipt_rel_path) <= 50),
     CONSTRAINT ck_normal_notes_150                  CHECK (LENGTH(notes)       <= 150),
-    CONSTRAINT ck_normal_date_time                  CHECK (LENGTH(date_time)   == 19),
+    CONSTRAINT ck_normal_date_time_60               CHECK (LENGTH(date_time)   <= 60),
     CONSTRAINT ck_non_empty_receipt_rel_path_notes  CHECK (
         (receipt_rel_path == NULL OR LENGTH(receipt_rel_path) > 0) AND
         (notes            == NULL OR LENGTH(notes) > 0)
