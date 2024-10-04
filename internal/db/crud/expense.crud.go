@@ -109,12 +109,12 @@ func UpdateExpense(database *sql.DB, expense db.Expense) error {
 	}
 
 	sqlQuery := `UPDATE expenses SET
-                    session_id,
-                    type_id,
-                    currency,
-                    receipt_rel_path,
-                    notes,
-                    date_time
+                    session_id = ?,
+                    type_id = ?,
+                    currency = ?,
+                    receipt_rel_path = ?,
+                    notes = ?,
+                    date_time = ?
                 WHERE id = ?`
 	stmt, err := database.Prepare(sqlQuery)
 	if err != nil {
