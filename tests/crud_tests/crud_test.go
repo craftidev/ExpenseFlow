@@ -140,6 +140,168 @@ func TestGetModelsByID(t *testing.T) {
     }
 }
 
+func TestUpdateModels(t *testing.T) {
+    client := validClient
+    session := validSession
+    carTrip := validCarTrip
+    expenseType := validExpenseType
+    expense := validExpense
+    lineItem := validLineItem
+
+    clientChange := "updated"
+    sessionChange := "updated"
+    carTripChange := "1954-10-03"
+    expenseTypeChange := "updated"
+    expenseChange := sql.NullString{String: "updated", Valid: true}
+    lineItemChange := 111.1
+
+    client.Name = clientChange
+    session.Location = sessionChange
+    carTrip.DateOnly = carTripChange
+    expenseType.Name = expenseTypeChange
+    expense.Notes = expenseChange
+    lineItem.Total = lineItemChange
+
+    errClient := crud.UpdateClient(DatabaseTest, client)
+    errSession := crud.UpdateSession(DatabaseTest, session)
+    errCarTrip := crud.UpdateCarTrip(DatabaseTest, carTrip)
+    errExpenseType := crud.UpdateExpenseType(DatabaseTest, expenseType)
+    errExpense := crud.UpdateExpense(DatabaseTest, expense)
+    errLineItem := crud.UpdateLineItem(DatabaseTest, lineItem)
+
+    errsValid := []struct {
+    name string
+    err  error
+    }{
+        {"Client", errClient},
+        {"Session", errSession},
+        {"CarTrip", errCarTrip},
+        {"ExpenseType", errExpenseType},
+        {"Expense", errExpense},
+        {"LineItem", errLineItem},
+    }
+    for _, e := range errsValid {
+        if e.err != nil {
+            t.Errorf("expected no error on UPDATE for %s, got: %v", e.name, e.err)
+        }
+    }
+
+    if  clientChange != client.Name ||
+        sessionChange != session.Location ||
+        carTripChange != carTrip.DateOnly ||
+        expenseTypeChange != expenseType.Name ||
+        expenseChange != expense.Notes ||
+        lineItemChange != lineItem.Total {
+            t.Error("data UPDATEd doesn't match data changed")
+    }
+
+    // UNIQUE Invalid re-update
+    carTripCreation := validCarTrip // Avoid FK shenanigans later
+    carTripCreation.SessionID = sql.NullInt64{Valid: false}
+    _, errClientCreation := crud.CreateClient(DatabaseTest, validClient)
+    _, errCarTripCreation := crud.CreateCarTrip(DatabaseTest, carTripCreation)
+    _, errExpenseTypeCreation := crud.CreateExpenseType(DatabaseTest, validExpenseType)
+    if  errClientCreation != nil ||
+        errCarTripCreation != nil ||
+        errExpenseTypeCreation != nil {
+            t.Error("Unexpected error on additional creation for UNIQUE tests in UPDATE tests")
+    }
+
+    client.Name = validClient.Name
+    carTrip.DateOnly = validCarTrip.DateOnly
+    expenseType.Name = validExpenseType.Name
+
+    errClient = crud.UpdateClient(DatabaseTest, client)
+    errCarTrip = crud.UpdateCarTrip(DatabaseTest, carTrip)
+    errExpenseType = crud.UpdateExpenseType(DatabaseTest, expenseType)
+    if errClient == nil || errCarTrip == nil || errExpenseType == nil {
+        t.Error("expected errors on data UPDATEd with same UNIQUE entry")
+    }
+}
+
+func TestDeleteModels(t *testing.T) {
+    // Invalid delete because of FK
+    // ExpenseType: FK in expenses
+    // Expense: FK in line_items
+    // Session: FK in car_trips, expenses
+    // Client: FK in sessions
+    expectedErrClient := crud.DeleteClientByID(DatabaseTest, 1)
+    expectedErrSession := crud.DeleteSessionByID(DatabaseTest, 1)
+    expectedErrExpenseType := crud.DeleteExpenseTypeByID(DatabaseTest, 1)
+    expectedErrExpense := crud.DeleteExpenseByID(DatabaseTest, 1)
+
+    errsInvalid := []struct {
+        name string
+        err  error
+    }{
+        {"Client", expectedErrClient},
+        {"Session", expectedErrSession},
+        {"ExpenseType", expectedErrExpenseType},
+        {"Expense", expectedErrExpense},
+    }
+    for _, e := range errsInvalid {
+        if e.err == nil {
+            t.Errorf(
+                "expected error on DELETE because of FK for %s, got: %v",
+                e.name, e.err,
+            )
+        }
+    }
+
+    // Valid DELETEs
+    errLineItem := crud.DeleteLineItemByID(DatabaseTest, 1)
+    errCarTrip := crud.DeleteCarTripByID(DatabaseTest, 1)
+    errExpense := crud.DeleteExpenseByID(DatabaseTest, 1)
+    errExpenseType := crud.DeleteExpenseTypeByID(DatabaseTest, 1)
+    errSession := crud.DeleteSessionByID(DatabaseTest, 1)
+    errClient := crud.DeleteClientByID(DatabaseTest, 1)
+
+    errsValid := []struct {
+        name string
+        err  error
+    }{
+        {"LineItem", errLineItem},
+        {"CarTrip", errCarTrip},
+        {"Expense", errExpense},
+        {"ExpenseType", errExpenseType},
+        {"Session", errSession},
+        {"Client", errClient},
+    }
+    for _, e := range errsValid {
+        if e.err != nil {
+            t.Fatalf("expected no error on DELETE for %s, got: %v", e.name, e.err)
+        }
+    }
+
+    _, errLineItemFetch := crud.GetLineItemByID(DatabaseTest, 1)
+    _, errCarTripFetch := crud.GetCarTripByID(DatabaseTest, 1)
+    _, errExpenseFetch := crud.GetExpenseByID(DatabaseTest, 1)
+    _, errExpenseTypeFetch := crud.GetExpenseTypeByID(DatabaseTest, 1)
+    _, errSessionFetch := crud.GetSessionByID(DatabaseTest, 1)
+    _, errClientFetch := crud.GetClientByID(DatabaseTest, 1)
+
+    errsInvalid = []struct {
+        name string
+        err  error
+    }{
+        {"LineItem", errLineItemFetch},
+        {"CarTrip", errCarTripFetch},
+        {"Expense", errExpenseFetch},
+        {"ExpenseType", errExpenseTypeFetch},
+        {"Session", errSessionFetch},
+        {"Client", errClientFetch},
+    }
+    for _, e := range errsInvalid {
+        if e.err == nil {
+            t.Errorf(
+                "expected error on fetching DELETEd data for %s, got: %v",
+            e.name, e.err,
+        )
+        }
+    }
+}
+
+
 func compareEntities(t *testing.T, name string, expected, actual interface{}) {
     if !reflect.DeepEqual(expected, actual) {
         t.Errorf(
@@ -148,9 +310,3 @@ func compareEntities(t *testing.T, name string, expected, actual interface{}) {
         )
     }
 }
-
-// FK
-// Client: FK in sessions
-// Session: FK in car_trips, expenses
-// ExpenseType: FK in expenses
-// Expense: FK in line_items
