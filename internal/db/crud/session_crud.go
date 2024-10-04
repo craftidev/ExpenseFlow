@@ -212,7 +212,7 @@ func sessionIsNotRefAsAnFK(database *sql.DB, id int64) (bool, error) {
 	defer stmt.Close()
 
 	var count int
-	err = stmt.QueryRow(id).Scan(&count)
+	err = stmt.QueryRow(id, id).Scan(&count)
 	if err != nil {
 		return false, utils.LogError(
             "failed to count sessions with session ID: %v, error: %v",
